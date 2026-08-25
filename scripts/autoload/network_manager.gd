@@ -54,7 +54,7 @@ var lobby_players: Dictionary = {}
 var server_address: String = "127.0.0.1"
 
 ## The ENet multiplayer peer
-var peer: ENetMultiplayerPeer = null
+var peer: WebSocketMultiplayerPeer = null
 
 
 func _ready() -> void:
@@ -72,8 +72,8 @@ func _ready() -> void:
 
 ## Host a game server. Other players will connect to us.
 func host_game(port: int = DEFAULT_PORT, max_clients: int = MAX_PLAYERS) -> Error:
-	peer = ENetMultiplayerPeer.new()
-	var error := peer.create_server(port, max_clients)
+	peer = WebSocketMultiplayerPeer.new()
+	var error := peer.create_server(port)
 	if error != OK:
 		connection_failed.emit("Failed to create server: %s" % error_string(error))
 		return error
@@ -85,14 +85,16 @@ func host_game(port: int = DEFAULT_PORT, max_clients: int = MAX_PLAYERS) -> Erro
 	# Add ourselves to the lobby
 	_register_player(my_peer_id, _get_local_player_name())
 
-	print("[NetworkManager] Hosting on port %d" % port)
+	print("[NetworkManager] Hosting via WebSocket on port %d" % port)
 	return OK
 
 
 ## Join an existing game server.
 func join_game(address: String = "127.0.0.1", port: int = DEFAULT_PORT) -> Error:
-	peer = ENetMultiplayerPeer.new()
-	var error := peer.create_client(address, port)
+	peer = WebSocketMultiplayerPeer.new()
+	# For WebSockets, the URL is used
+	var url = "ws://" + address + ":" + str(port)
+	var error := peer.create_client(url)
 	if error != OK:
 		connection_failed.emit("Failed to connect: %s" % error_string(error))
 		return error
