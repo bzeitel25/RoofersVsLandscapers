@@ -31,6 +31,9 @@
 * **Physics & Scaling:** **NEVER scale a `RigidBody3D` directly** (e.g., `scale = Vector3(...)`). It destroys Godot's physics solver and corrupts the matrix. Scale the meshes inside it instead.
 * **Freeze Mode Bug:** In Godot 4, a frozen `RigidBody3D` with a `CollisionShape3D` will act as a static wall and refuse to follow its parent unless you explicitly set its `freeze_mode` to `RigidBody3D.FREEZE_MODE_KINEMATIC`. This is handled inside `_set_physical_state(false)` in `base_tool.gd`.
 
+* **Extends Paths:** Due to Godot 4 global class cache desyncs causing project-wide parse errors during git operations, **NEVER** use extends BaseMelee or extends BaseTool. ALWAYS use absolute paths for weapon base classes (e.g., extends "res://scripts/weapons/melee/base_melee.gd").
+* **Agent Rule Enforcer:** An Antigravity rule (AGENTS.md) is active to strictly enforce reading this handoff document and coordinating with other agents (e.g., Claude).
+
 ---
 
 ## 🕒 Current State & Recent Changes (Aug 2026)
@@ -69,6 +72,14 @@
 * Cars are tagged (`vehicles` + `hotwireable` groups, `set_meta("hotwireable", true)`) ready for the future hotwire/launch feature.
 * All static geometry on **collision layer 1** (matches the player floor + vault raycast masks). No RigidBody scaling; houses built front-on-(-Z) then yaw-faced to the cul-de-sac. Parse- + runtime-validated in Godot 4.3 headless (0 script errors).
 
+### System Robustness & Physics Tuning (Aug 25 2026)
+* **Crash Fixes**: Deleted corrupted Godot class cache (broken BaseMelee parsing). Fixed space/tab syntax errors. Fixed multiple undefined method/variable calls across melee/gadget scripts.
+* **Physics Overhaul**: Tweaked PlayerCharacter movement for faster base speed (7.0), snappier horizontal deceleration (25.0), and significantly higher jump force (12.0) with custom gravity scaling so players can easily clear 1-story (4m) gaps and reach rooftops.
+* **NPC Fix**: Dummy NPCs now properly inherit horizontal deceleration so they don't slide endlessly when knocked back.
+* **Foreman Shield**: Glass shield now correctly spawns using the camera's true forward vector, perfectly aligning with the crosshair instead of the unrotated player root.
+* **Extension Ladder Fix**: Ladder placement raycasts now exclusively use collision_mask = 1 (World layer) so they never snap to NPCs or players. The ghost ladder preview also correctly hides when the gadget is unequipped.
+* **Training Area**: Added a Universal Supply Box that grants max ammo/supplies with an infinite 3-second respawn loop.
+
 ---
 
 ## 🚀 Next Steps / To-Do
@@ -79,6 +90,8 @@
 5. **Vehicles:** Hotwire + launch the parked cars - the arena already tags them (`vehicles`/`hotwireable` groups + meta) to wire into the Rocket Mower vehicle code.
 6. **Interiors/Traps:** Furniture cover + a Home Alone-style trap/deployable system; swap the placeholder walkable ramps for real step-geometry stairs once the controller supports stair-stepping; add gable-end infill.
 7. **Bots/Nav:** Bake a NavigationRegion over the arena (yards, streets, interiors) for AI pathing.
+
+
 
 ---
 *End of Document. Next Agent: Please append your changes to "Recent Changes" when finishing your session.*
