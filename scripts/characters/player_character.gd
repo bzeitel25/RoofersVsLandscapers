@@ -582,6 +582,10 @@ func _rotate_character_mesh(delta: float) -> void:
 		if camera_forward.length_squared() > 0.01:
 			var target_basis = Basis.looking_at(camera_forward.normalized(), Vector3.UP)
 			character_mesh.global_transform.basis = character_mesh.global_transform.basis.slerp(target_basis, 15.0 * delta)
+			
+	# Also pitch the weapon arm up and down to match camera pitch
+	if hand_attachment_point:
+		hand_attachment_point.rotation.x = camera_pivot.rotation.x
 
 ## Returns the true 3D position the crosshair is looking at (Warframe style aiming)
 func get_aim_target() -> Vector3:
@@ -604,10 +608,6 @@ func get_aim_target() -> Vector3:
 	if result:
 		return result.position
 	return to
-		
-		# Also pitch the weapon arm up and down to match camera pitch
-		if hand_attachment_point:
-			hand_attachment_point.rotation.x = camera_pivot.rotation.x
 
 
 # ================================================================
