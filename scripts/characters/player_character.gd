@@ -32,18 +32,18 @@ class_name PlayerCharacter
 # --- Exported Properties (tweak in inspector) ---
 
 @export_group("Movement")
-@export var move_speed: float = 6.0
-@export var sprint_multiplier: float = 1.5
-@export var acceleration: float = 15.0
-@export var deceleration: float = 20.0
-@export var air_control: float = 0.3  ## How much control in the air (0-1)
+@export var move_speed: float = 7.0
+@export var sprint_multiplier: float = 1.6
+@export var acceleration: float = 20.0
+@export var deceleration: float = 25.0
+@export var air_control: float = 0.5  ## How much control in the air (0-1)
 
 @export_group("Jumping")
 @export var max_jumps: int = 1               ## Allow double/triple jumps!
 var _jumps_made: int = 0
-@export var jump_force: float = 9.0
-@export var gravity_multiplier: float = 1.5  ## Multiplier on default gravity
-@export var fall_multiplier: float = 2.0     ## Extra gravity when falling (snappier feel)
+@export var jump_force: float = 12.0
+@export var gravity_multiplier: float = 1.2  ## Multiplier on default gravity
+@export var fall_multiplier: float = 1.5     ## Extra gravity when falling (snappier feel)
 @export var coyote_time: float = 0.15        ## Grace period after leaving edge
 @export var jump_buffer: float = 0.1         ## Buffer window for jump input
 
@@ -494,6 +494,13 @@ func _physics_process(delta: float) -> void:
 	if owning_peer_id == -1:
 		# Dummy NPC logic: apply gravity and slide so they don't float
 		_handle_gravity(delta)
+		
+		# Decelerate horizontal momentum so they don't slide forever from knockback
+		var decel = deceleration
+		if not is_on_floor():
+			decel *= air_control
+		velocity.x = move_toward(velocity.x, 0.0, decel * delta)
+		velocity.z = move_toward(velocity.z, 0.0, decel * delta)
 		
 		var dummy_rig = character_mesh.get_node_or_null("ChibiRig")
 		if dummy_rig:
