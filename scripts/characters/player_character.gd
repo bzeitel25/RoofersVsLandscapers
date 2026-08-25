@@ -479,7 +479,7 @@ func _handle_movement(delta: float) -> void:
 	_is_sprinting = Input.is_action_pressed("sprint") and _input_dir.length() > 0.1
 	# If we are zoomed in, sprinting is disabled and speed is slowed
 	var sprint_mult = sprint_multiplier if (_is_sprinting and zoom_speed_mult >= 1.0) else 1.0
-	var target_speed := (move_speed * sprint_mult) * zoom_speed_mult
+	var target_speed: float = (move_speed * sprint_mult) * zoom_speed_mult
 	
 	if is_tarred:
 		target_speed *= 0.4 # 60% slow from tar

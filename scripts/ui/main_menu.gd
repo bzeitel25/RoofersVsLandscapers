@@ -11,6 +11,9 @@ var team_dropdown: OptionButton
 var start_button: Button
 
 func _ready() -> void:
+	if has_node("VBoxContainer"):
+		$VBoxContainer.queue_free()
+		
 	_build_ui()
 	NetworkManager.lobby_updated.connect(_on_lobby_updated)
 	NetworkManager.connected_to_server.connect(_show_lobby)
