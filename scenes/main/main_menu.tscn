@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://dt83vms5x5gwr"]
+
+[ext_resource type="Script" uid="uid://dcdr7c8o48qgt" path="res://scripts/ui/main_menu.gd" id="1"]
+
+[node name="MainMenu" type="Control" unique_id=104009635]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1443634932]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.12, 0.18, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=213164280]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -180.0
+offset_right = 200.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="VBoxContainer" unique_id=492544904]
+layout_mode = 2
+text = "ROOFERS vs LANDSCAPERS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="VBoxContainer" unique_id=1449575662]
+layout_mode = 2
+text = "The Shingle That Started It All"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="VBoxContainer" unique_id=507369882]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="HostButton" type="Button" parent="VBoxContainer" unique_id=233222399]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Host Game"
+
+[node name="JoinButton" type="Button" parent="VBoxContainer" unique_id=644954543]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Join Game"
+
+[node name="TestButton" type="Button" parent="VBoxContainer" unique_id=252437688]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Test Level (Solo)"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=938797312]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Quit"
+
+[connection signal="pressed" from="VBoxContainer/HostButton" to="." method="_on_host_pressed"]
+[connection signal="pressed" from="VBoxContainer/JoinButton" to="." method="_on_join_pressed"]
+[connection signal="pressed" from="VBoxContainer/TestButton" to="." method="_on_test_pressed"]
+[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]
