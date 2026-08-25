@@ -58,7 +58,7 @@ func _deploy(pos: Vector3) -> void:
 	
 	obj.body_entered.connect(func(body: Node3D):
 		if body.has_method("take_damage") and body != wielder:
- 			body.take_damage(20)
+			body.take_damage(20)
 			if "velocity" in body:
 				body.velocity = Vector3.ZERO
 			obj.queue_free()

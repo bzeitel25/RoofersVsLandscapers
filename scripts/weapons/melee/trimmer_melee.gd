@@ -52,7 +52,7 @@ func _ready() -> void:
 func primary_action() -> void:
 	if not can_use() or not wielder: return
 	_start_cooldown()
-	_play_swing_animation()
+	_perform_attack()
 	
 	# Rapid short-range raycast
 	var space_state = wielder.get_world_3d().direct_space_state

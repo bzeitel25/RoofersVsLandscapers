@@ -864,7 +864,7 @@ func exit_vehicle(ejected: bool = false) -> void:
 # ================================================================
 
 ## Called by the server when this character takes confirmed damage
-func take_damage(amount: float, from_peer_id: int) -> void:
+func take_damage(amount: float, from_peer_id: int = 1) -> void:
 	if not is_alive:
 		return
 

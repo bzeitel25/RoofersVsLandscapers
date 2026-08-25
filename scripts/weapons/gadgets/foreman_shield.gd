@@ -2,7 +2,7 @@ extends StaticBody3D
 
 var health: float = 150.0
 
-func take_damage(amount: float, from_peer: int) -> void:
+func take_damage(amount: float, from_peer: int = 1) -> void:
 	health -= amount
 	print("Foreman Shield took ", amount, " damage! Health remaining: ", health)
 	

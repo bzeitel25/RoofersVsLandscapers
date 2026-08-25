@@ -1,8 +1,0 @@
-res://scripts/levels/test_level.gd
-res://scripts/characters/player_character.gd
-res://scripts/characters/chibi_rig.gd
-res://scripts/characters/components/loadout_manager.gd
-res://scripts/weapons/base_tool.gd
-res://scripts/autoload/network_manager.gd
-res://scripts/weapons/ranged/slingshot.gd
-res://scripts/ui/main_menu.gd

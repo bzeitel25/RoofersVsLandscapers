@@ -59,7 +59,7 @@ func alt_use_pressed(character: Node3D) -> void:
 	if not can_use() or not wielder: return
 	
 	_start_cooldown()
-	_play_swing_animation()
+	_perform_attack()
 	
 	# Raycast for the alt-fire (similar to melee strike but shorter/more precise)
 	var camera = wielder.get_node_or_null("CameraPivot/SpringArm3D/Camera3D")
@@ -68,7 +68,7 @@ func alt_use_pressed(character: Node3D) -> void:
 	var space_state = wielder.get_world_3d().direct_space_state
 	var forward = -camera.global_transform.basis.z
 	var start_pos = wielder.global_position + Vector3(0, 1.5, 0)
-	var end_pos = start_pos + (forward * range_dist * 1.2) # Slightly longer reach for the hook
+	var end_pos = start_pos + (forward * 2.5) # Melee reach for the hook
 	
 	var query = PhysicsRayQueryParameters3D.create(start_pos, end_pos)
 	query.exclude = [wielder.get_rid()]

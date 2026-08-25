@@ -38,8 +38,6 @@ func primary_action() -> void:
 	if not wielder: return
 	
 	_start_cooldown()
-	current_ammo -= 1
-	consume_supplies()
 	print("Placed Glass Shield. Charges left: ", current_ammo)
 	
 	var space_state = wielder.get_world_3d().direct_space_state
