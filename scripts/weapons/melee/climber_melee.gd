@@ -1,4 +1,4 @@
-extends BaseMelee
+extends "res://scripts/weapons/melee/base_melee.gd"
 
 var visual_root: Node3D
 

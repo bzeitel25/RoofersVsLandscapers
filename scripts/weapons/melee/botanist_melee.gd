@@ -1,4 +1,4 @@
-extends BaseMelee
+extends "res://scripts/weapons/melee/base_melee.gd"
 
 var left_half: Node3D
 var right_half: Node3D

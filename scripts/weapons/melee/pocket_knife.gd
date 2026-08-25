@@ -1,5 +1,5 @@
 class_name PocketKnife
-extends BaseMelee
+extends "res://scripts/weapons/melee/base_melee.gd"
 
 func _ready() -> void:
 	tool_name = "Pocket Knife"

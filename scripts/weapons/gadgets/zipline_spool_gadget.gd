@@ -1,5 +1,5 @@
 class_name ZiplineSpool
-extends BaseTool
+extends "res://scripts/weapons/base_tool.gd"
 
 const ZIPLINE_SCRIPT = preload("res://scripts/traversal/zipline_object.gd")
 

@@ -1,5 +1,5 @@
 class_name ShingleSlingerRanged
-extends BaseTool
+extends "res://scripts/weapons/base_tool.gd"
 
 const PROJECTILE_SCRIPT = preload("res://scripts/weapons/ranged/base_projectile.gd")
 var projectile_speed = 35.0

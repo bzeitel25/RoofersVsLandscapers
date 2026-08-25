@@ -1,4 +1,4 @@
-extends BaseMelee
+extends "res://scripts/weapons/melee/base_melee.gd"
 
 func _init() -> void:
 	tool_name = "Screwdriver"

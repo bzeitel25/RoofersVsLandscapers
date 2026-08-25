@@ -279,12 +279,17 @@ func _on_hitbox_body_entered(body: Node3D) -> void:
 	if body.has_method("take_damage"):
 		var peer_id = wielder.owning_peer_id if "owning_peer_id" in wielder else 1
 		
-		# Calculate Critical Hit
+		# Boss Hammer instantly shatters glass shields
 		var final_damage = damage
-		var is_crit = randf() < crit_chance
-		if is_crit:
-			final_damage *= crit_multiplier
-			print("CRITICAL HIT! ", final_damage, " damage!")
+		if body.is_in_group("foreman_shield") and tool_name == "Boss Hammer":
+			final_damage = 999.0
+			print("Boss Hammer instantly shattered the glass shield!")
+		else:
+			# Calculate Standard Critical Hit
+			var is_crit = randf() < crit_chance
+			if is_crit:
+				final_damage *= crit_multiplier
+				print("CRITICAL HIT! ", final_damage, " damage!")
 		
 		body.take_damage(final_damage, peer_id)
 		

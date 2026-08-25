@@ -1,4 +1,4 @@
-extends BaseTool
+extends "res://scripts/weapons/base_tool.gd"
 
 @export var push_force: float = 8.0
 @export var puff_force: float = 25.0

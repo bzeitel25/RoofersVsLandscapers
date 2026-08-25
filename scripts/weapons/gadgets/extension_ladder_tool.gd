@@ -1,5 +1,5 @@
 class_name ExtensionLadderTool
-extends BaseTool
+extends "res://scripts/weapons/base_tool.gd"
 
 const LADDER_SCRIPT = preload("res://scripts/traversal/ladder_object.gd")
 
