@@ -32,20 +32,31 @@ func _ready() -> void:
 
 func primary_action() -> void:
 	if not can_use(): return
+	if not wielder: return
 	_start_cooldown()
-	if not wielder or not wielder.camera:
-		return
 	
 	var space_state = wielder.get_world_3d().direct_space_state
-	var cam_pos = wielder.camera.global_position
-	var forward = -wielder.camera.global_transform.basis.z
-	var end_pos = cam_pos + forward * 5.0
 	
-	var query = PhysicsRayQueryParameters3D.create(cam_pos, end_pos)
+	# Get the player's flat forward direction
+	var forward = -wielder.global_transform.basis.z
+	forward.y = 0
+	forward = forward.normalized()
+	if forward.length_squared() < 0.001:
+		forward = Vector3.FORWARD
+		
+	# Target a position 3 meters in front of the player
+	var target_pos = wielder.global_position + (forward * 3.0)
+	
+	# Raycast straight down from slightly above that point to snap to the floor
+	var ray_start = target_pos + Vector3(0, 1.5, 0)
+	var ray_end = target_pos + Vector3(0, -5.0, 0)
+	
+	var query = PhysicsRayQueryParameters3D.create(ray_start, ray_end)
 	query.exclude = [wielder.get_rid()]
+	query.collision_mask = 1 # Environment layer
 	var result = space_state.intersect_ray(query)
 	
-	var deploy_pos = end_pos
+	var deploy_pos = target_pos
 	if result:
 		deploy_pos = result.position
 	
@@ -61,7 +72,7 @@ func _deploy(pos: Vector3, forward: Vector3) -> void:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	box_mesh.material = mat
 	mesh_inst.mesh = box_mesh
-	mesh_inst.position = Vector3(0, 1.0, 0)
+	mesh_inst.position = Vector3(0, 1.0, 0) # Offset so bottom is at 'pos'
 	obj.add_child(mesh_inst)
 	
 	var col = CollisionShape3D.new()
@@ -73,9 +84,10 @@ func _deploy(pos: Vector3, forward: Vector3) -> void:
 	
 	wielder.get_tree().current_scene.add_child(obj)
 	obj.global_position = pos
-	var flat_forward = Vector3(forward.x, 0, forward.z).normalized()
-	if flat_forward.length_squared() > 0.001:
-		obj.look_at(pos + flat_forward, Vector3.UP)
+	
+	# Face the barrier perpendicular to the forward vector
+	if forward.length_squared() > 0.001:
+		obj.look_at(pos + forward, Vector3.UP)
 	
 	var timer = Timer.new()
 	timer.wait_time = 10.0
