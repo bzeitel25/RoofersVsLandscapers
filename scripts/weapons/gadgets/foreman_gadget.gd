@@ -1,11 +1,14 @@
 extends "res://scripts/weapons/base_tool.gd"
 
 var visual_root: Node3D
+const SHIELD_SCRIPT = preload("res://scripts/weapons/gadgets/foreman_shield.gd")
 
 func _init() -> void:
 	tool_name = "Blueprint Barrier"
 	slot_type = 2
-	cooldown = 8.0
+	cooldown = 1.5
+	max_ammo = 3 # 3 Charges
+	supply_cost = 33 # Consumes ~1/3 of max supplies (100) per charge
 
 func _ready() -> void:
 	super._ready()
@@ -33,37 +36,54 @@ func _ready() -> void:
 func primary_action() -> void:
 	if not can_use(): return
 	if not wielder: return
+	
 	_start_cooldown()
+	current_ammo -= 1
+	consume_supplies()
+	print("Placed Glass Shield. Charges left: ", current_ammo)
 	
 	var space_state = wielder.get_world_3d().direct_space_state
 	
-	# Get the player's flat forward direction
+	# Flat forward for placement logic
 	var forward = -wielder.global_transform.basis.z
 	forward.y = 0
 	forward = forward.normalized()
 	if forward.length_squared() < 0.001:
 		forward = Vector3.FORWARD
 		
-	# Target a position 3 meters in front of the player
-	var target_pos = wielder.global_position + (forward * 3.0)
+	# First, raycast straight from the camera to see if we are looking AT a shield to stack on
+	var cam_pos = wielder.camera.global_position
+	var cam_forward = -wielder.camera.global_transform.basis.z
+	var query_cam = PhysicsRayQueryParameters3D.create(cam_pos, cam_pos + cam_forward * 6.0)
+	query_cam.exclude = [wielder.get_rid()]
+	query_cam.collision_mask = 1 | 2 | 4 | 8
+	var cam_result = space_state.intersect_ray(query_cam)
 	
-	# Raycast straight down from slightly above that point to snap to the floor
-	var ray_start = target_pos + Vector3(0, 1.5, 0)
-	var ray_end = target_pos + Vector3(0, -5.0, 0)
+	var deploy_pos = wielder.global_position + (forward * 3.0)
+	var face_direction = forward
 	
-	var query = PhysicsRayQueryParameters3D.create(ray_start, ray_end)
-	query.exclude = [wielder.get_rid()]
-	query.collision_mask = 1 # Environment layer
-	var result = space_state.intersect_ray(query)
+	if cam_result and cam_result.collider.is_in_group("foreman_shield"):
+		# Stack exactly on top of the targeted shield!
+		deploy_pos = cam_result.collider.global_position + Vector3(0, 2.0, 0)
+		face_direction = -cam_result.collider.global_transform.basis.z # Match its rotation
+	else:
+		# Did not hit a shield, standard floor snap placement
+		var ray_start = deploy_pos + Vector3(0, 1.5, 0)
+		var ray_end = deploy_pos + Vector3(0, -5.0, 0)
+		var query = PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+		query.exclude = [wielder.get_rid()]
+		query.collision_mask = 1 # Environment layer
+		var result = space_state.intersect_ray(query)
+		if result:
+			deploy_pos = result.position
 	
-	var deploy_pos = target_pos
-	if result:
-		deploy_pos = result.position
-	
-	_deploy(deploy_pos, forward)
+	_deploy(deploy_pos, face_direction)
 
 func _deploy(pos: Vector3, forward: Vector3) -> void:
 	var obj = StaticBody3D.new()
+	obj.set_script(SHIELD_SCRIPT)
+	obj.add_to_group("foreman_shield")
+	
 	var mesh_inst = MeshInstance3D.new()
 	var box_mesh = BoxMesh.new()
 	box_mesh.size = Vector3(3.0, 2.0, 0.2)
@@ -87,10 +107,12 @@ func _deploy(pos: Vector3, forward: Vector3) -> void:
 	
 	# Face the barrier perpendicular to the forward vector
 	if forward.length_squared() > 0.001:
-		obj.look_at(pos + forward, Vector3.UP)
+		var target_look = pos + forward
+		target_look.y = pos.y # Prevent pitching up/down
+		obj.look_at(target_look, Vector3.UP)
 	
 	var timer = Timer.new()
-	timer.wait_time = 10.0
+	timer.wait_time = 30.0 # Lasts 30 seconds
 	timer.one_shot = true
 	timer.timeout.connect(obj.queue_free)
 	obj.add_child(timer)

@@ -108,6 +108,9 @@ var health_bar: ProgressBar = null
 var damage_flash: ColorRect = null
 var overhead_hp_bar: ProgressBar = null
 var overhead_hp_viewport: SubViewport = null
+var wpn_ui_slots: Array = [] # Stores [ColorRect, Label (CD), Label (Key)] dicts for the 3 weapons
+var ammo_label: Label = null
+var supplies_label: Label = null
 
 func _ready() -> void:
 	# Set collision layers: Player is Layer 2, collides with World (1) and Players (2)
@@ -225,14 +228,66 @@ func _create_local_hud() -> void:
 	crosshair.custom_minimum_size = Vector2(8, 8)
 	crosshair.size = Vector2(8, 8)
 	crosshair.set_anchors_preset(Control.PRESET_CENTER)
-	crosshair.position = Vector2(-4, -4) # Offset by half size to truly center
+	crosshair.position = Vector2(-4, -4)
 	crosshair.color = Color.WHITE
 	canvas.add_child(crosshair)
 	
-	# Health Bar
+	# Weapon Icons (Left of Health)
+	var wpn_container = HBoxContainer.new()
+	wpn_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	wpn_container.position = Vector2(20, -70)
+	canvas.add_child(wpn_container)
+	
+	var hotkeys = ["1", "2", "3"]
+	for i in range(3):
+		var bg = ColorRect.new()
+		bg.custom_minimum_size = Vector2(50, 50)
+		bg.color = Color(0.2, 0.2, 0.2, 0.8)
+		wpn_container.add_child(bg)
+		
+		var hotkey_lbl = Label.new()
+		hotkey_lbl.text = hotkeys[i]
+		hotkey_lbl.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		hotkey_lbl.position = Vector2(4, 2)
+		bg.add_child(hotkey_lbl)
+		
+		var name_lbl = Label.new()
+		name_lbl.text = ""
+		name_lbl.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		name_lbl.add_theme_font_size_override("font_size", 10)
+		bg.add_child(name_lbl)
+		
+		var cd_lbl = Label.new()
+		cd_lbl.text = ""
+		cd_lbl.set_anchors_preset(Control.PRESET_CENTER)
+		cd_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cd_lbl.add_theme_color_override("font_color", Color(1, 1, 0)) # Yellow text
+		bg.add_child(cd_lbl)
+		
+		wpn_ui_slots.append({"bg": bg, "cd": cd_lbl, "name": name_lbl})
+	
+	# Ammo & Supplies Labels (Above Health)
+	var stats_container = HBoxContainer.new()
+	stats_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	stats_container.position = Vector2(190, -80)
+	stats_container.add_theme_constant_override("separation", 20)
+	canvas.add_child(stats_container)
+	
+	ammo_label = Label.new()
+	ammo_label.text = "Ammo: --/--"
+	stats_container.add_child(ammo_label)
+	
+	supplies_label = Label.new()
+	supplies_label.text = "Supplies: 100"
+	supplies_label.add_theme_color_override("font_color", Color(0.2, 0.8, 1.0)) # Cyan
+	stats_container.add_child(supplies_label)
+	
+	# Health Bar (Shifted right to make room for weapons)
 	health_bar = ProgressBar.new()
 	health_bar.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	health_bar.position = Vector2(20, -50)
+	health_bar.position = Vector2(190, -50)
 	health_bar.size = Vector2(300, 30)
 	health_bar.max_value = max_health
 	health_bar.value = health
@@ -245,7 +300,7 @@ func _create_local_hud() -> void:
 	# Damage Flash Screen
 	damage_flash = ColorRect.new()
 	damage_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
-	damage_flash.color = Color(1.0, 0.0, 0.0, 0.0) # Transparent red
+	damage_flash.color = Color(1.0, 0.0, 0.0, 0.0)
 	damage_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	canvas.add_child(damage_flash)
 
@@ -369,6 +424,45 @@ func _use_skill(skill_num: int) -> void:
 	if used:
 		print("Current Special Ammo: ", special_ammo)
 
+
+func _process(delta: float) -> void:
+	if _is_local_player():
+		_update_hud()
+
+func _update_hud() -> void:
+	if supplies_label:
+		supplies_label.text = "Supplies: %d" % supplies
+	
+	if ammo_label and loadout_manager:
+		var active_tool = loadout_manager._slots[loadout_manager._active_slot]
+		if active_tool and active_tool.max_ammo > 0:
+			ammo_label.text = "Ammo: %d / %d" % [active_tool.current_ammo, active_tool.max_ammo]
+		else:
+			ammo_label.text = "Ammo: --/--"
+			
+		for i in range(3):
+			if i >= wpn_ui_slots.size(): break
+			var slot_data = wpn_ui_slots[i]
+			var tool = loadout_manager._slots[i]
+			
+			# Highlight active weapon
+			if i == loadout_manager._active_slot:
+				slot_data["bg"].color = Color(0.2, 0.6, 1.0, 0.8) # Active blue
+			else:
+				slot_data["bg"].color = Color(0.2, 0.2, 0.2, 0.8) # Inactive gray
+				
+			if tool:
+				# Show a tiny abbreviated name (first 6 chars)
+				slot_data["name"].text = tool.tool_name.substr(0, 6)
+				
+				# Cooldown
+				if tool._cooldown_timer > 0.0:
+					slot_data["cd"].text = "%.1f" % tool._cooldown_timer
+				else:
+					slot_data["cd"].text = ""
+			else:
+				slot_data["name"].text = ""
+				slot_data["cd"].text = ""
 
 func _physics_process(delta: float) -> void:
 	if skill_cooldowns[0] > 0: skill_cooldowns[0] -= delta
