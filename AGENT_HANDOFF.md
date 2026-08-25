@@ -1,56 +1,64 @@
-# Roofers vs Landscapers - Game Design & Handoff Document
+# 🤖 AGENT BATON PASS & PROJECT STATE
+**Project:** Roofers vs Landscapers
+**Engine:** Godot 4.x
+**Genre:** 10v10 Third-Person Shooter (TPS) Class-Based Combat
 
-This document serves as the master tracking file for all currently implemented mechanics, classes, weapons, and synergies in the project. 
+*Any AI agent joining this project should read this document first to understand the architecture, strict engine rules, and current progress. Update the "Recent Changes" section when you complete a task!*
 
-## 1. Core Systems
+---
 
-*   **Multiplayer Architecture:** The game runs on a `WebSocketMultiplayerPeer` backend, allowing for browser-compatible HTML5 web exports. It includes a programmatic Host/Join lobby UI.
-*   **Aiming System:** Utilizes a "Warframe-style" True Crosshair TPS system. The camera is offset over the shoulder (swappable with `C`), and projectiles are dynamically calculated to fire from the weapon barrel towards the 3D position the center-screen crosshair is resting on.
-*   **Archetype Weight System:** 
-    *   **Light Classes:** Double Jump (`max_jumps = 2`), Fast base speed (`6.5`), Extreme Sprint (`1.8x`).
-    *   **Medium Classes:** Single Jump (`1`), Standard speed (`6.0`), Standard Sprint (`1.4x`).
-    *   **Heavy Classes:** Single Jump (`1`), Sluggish speed (`5.0`), Slow Sprint (`1.3x`).
+## 🏗️ Core Architecture
+1. **Player Controller (`player_character.gd`):** 
+   * A `CharacterBody3D` with a Warframe-style over-the-shoulder TPS camera.
+   * `C` key swaps the camera shoulder. 
+   * The character's mesh is dynamically rotated to face the crosshair (`-Z`) using `Basis.looking_at()`.
 
-## 2. Parkour & Traversal Mechanics
+2. **Weapon System (`base_tool.gd`, `base_melee.gd`, `base_projectile.gd`):**
+   * Weapons are `RigidBody3D` nodes so they can be physically dropped into the world.
+   * When held, they are parented to a `HandAttachment` (Node3D) on the character mesh.
 
-*   **Ledge Vaulting:** Approaching a ledge while falling and holding Jump (Spacebar) will freeze the player's fall and smoothly tween them up and over the ledge.
-*   **Roof Sliding:** Walking on an angled surface (like a roof) and holding Crouch (Ctrl) disables friction and rapidly accelerates the player down the slope.
-*   **Zipline Spool (Gadget):** A deployable traversal tool. Click once to place the start peg on a wall, click again to place the end peg. Spawns a physical cable that players can interact with (E) to attach to and slide along by holding Forward (W).
+3. **Loadout Manager (`loadout_manager.gd`):**
+   * Manages 3 inventory slots per player: **0: Melee**, **1: Ranged**, **2: Gadget**.
+   * Keys `1`, `2`, and `3` swap between these.
 
-## 3. Weapons & Synergies
+4. **Team Manager (`team_manager.gd`):**
+   * Autoload Singleton defining 20 unique classes (10 Roofers, 10 Landscapers) and team specific shader/UI colors.
 
-### Roofer Arsenal
+---
 
-*   **Pneumatic Nail Gun (Ranged):**
-    *   *Primary:* Fires fast, physical nails that stick into enemies (applies a 5-second `stuck_nail` stack).
-    *   *Alt-Fire (Steady Aim):* Zooms the camera in, reduces movement speed to 65%, and vastly tightens the bullet spread for accurate mid-range shots.
-*   **The Pry Bar (Melee):**
-    *   *Primary:* Standard melee swings.
-    *   *Alt-Fire (Nail Puller & Deconstructor):* A precise strike that consumes all `stuck_nail` stacks on an enemy, violently ripping them out for 15 bonus burst damage per nail. If used on a gadget/deployable, it deals 300% damage to instantly shatter it.
-*   **Gutter Sniper (Ranged):**
-    *   *Primary:* High damage, single-shot. Strict 5-ammo limit to prevent infinite camping.
-    *   *Alt-Fire (Scope):* Pushes the camera into a deep 1st-person FOV zoom. Restricts player movement to 40% and disables sprinting while held. Includes a menu setting to swap between Hold-to-ADS and Toggle-ADS.
-*   **Shingle Slinger (Ranged):**
-    *   *Primary:* Rapidly throws single, sharp roofing shingles.
-    *   *Alt-Fire (Fan of Shingles):* Consumes 3 ammo to throw 5 shingles simultaneously in a wide horizontal shotgun spread.
-*   **Hot Tar Gun (Ranged):**
-    *   *Primary:* Fires heavy, arcing blobs of hot tar. Enemies hit are `tarred` for 4 seconds, suffering a 60% movement slow.
-    *   *Alt-Fire (Ignite Flare):* Fires a fast-moving, glowing flare. If it strikes a `tarred` enemy, it consumes the tar to **Ignite** them, dealing 16 DPS for 3 seconds.
+## ⚠️ CRITICAL GODOT 4 RULES (DO NOT BREAK)
+* **Coordinate System:** Forward is `-Z`. When building weapons, group meshes inside a `visual_root` (Node3D) and rotate them so they point along the `-Z` axis when held. For weapons built "up" along the Y axis, set `visual_root.rotation_degrees.x = -90`.
+* **Physics & Scaling:** **NEVER scale a `RigidBody3D` directly** (e.g., `scale = Vector3(...)`). It destroys Godot's physics solver and corrupts the matrix. Scale the meshes inside it instead.
+* **Freeze Mode Bug:** In Godot 4, a frozen `RigidBody3D` with a `CollisionShape3D` will act as a static wall and refuse to follow its parent unless you explicitly set its `freeze_mode` to `RigidBody3D.FREEZE_MODE_KINEMATIC`. This is handled inside `_set_physical_state(false)` in `base_tool.gd`.
 
-### Landscaper Arsenal
+---
 
-*   **Slingshot (Ranged):**
-    *   *Primary:* Fires standard stones.
-    *   *Alt-Fire (Special Ammo):* Loads special munitions (Rotten Fruit / Beehives) for varied status effects.
-*   **Leaf Blower (Ranged):**
-    *   *Primary:* Continuous stream.
-    *   *Alt-Fire (Air Blast):* Consumes a chunk of ammo to fire a heavy physics burst that knocks enemies backward.
-*   **Weed Wacker (Melee):**
-    *   *Primary:* Continuous, rapid-ticking short-range hits.
-    *   *Alt-Fire (Over-rev Dash):* Consumes 5 Gas to launch the player in a 25m/s horizontal dash, ending in a massive 40-damage AoE strike.
-*   **Felling Axe (Melee):**
-    *   *Primary:* Slow, heavy chops.
-    *   *Alt-Fire (TIMBER!):* A 2.5s cooldown overhead slam. Deals 150% damage to players, and 999 damage to enemy gadgets/fortifications to instantly shatter them.
+## 🕒 Current State & Recent Changes (Aug 2026)
 
-## 4. Vehicles
-*   **Big Tony's Rocket Mower:** A driveable zero-turn mower. It protects the driver, taking damage in their place. When its HP reaches 0, it ejects the driver and explodes, dealing 25% max HP blast damage in an AoE.
+### Multiplayer & Web
+* **Multiplayer Sync:** Fully transitioned from ENet to a `WebSocketMultiplayerPeer` backend to support browser-compatible HTML5 web exports. Programmatic Host/Join lobby UI is active.
+
+### Movement Archetypes & Parkour
+* **Light Classes:** Double Jump, Base Speed 6.5, Sprint 1.8x. (Climber gets a unique Triple Jump and 10.0 jump force).
+* **Medium Classes:** Single Jump, Base Speed 6.0, Sprint 1.4x.
+* **Heavy Classes:** Single Jump, Base Speed 5.0, Sprint 1.3x.
+* **Parkour Toolkit:** Added 3-raycast Ledge Vaulting, angled Roof Sliding (hold Crouch), and deployable physics Ziplines.
+
+### Weapons & Synergies
+* **Pneumatic Nail Gun (Nailer):** Primary sticks nails into targets. Alt-fire (Steady Aim) pulls FOV to 55 and slows movement to 65% for precision.
+* **Pry Bar (Nailer):** Alt-fire triggers the *Nail Puller* synergy (rips out stuck nails for 15 bonus damage each) or the *Deconstructor* (deals 300% damage to instantly shatter gadgets).
+* **Tar Gun (Tar King):** Primary shoots tar blobs applying a 60% movement slow. Alt-fire shoots an Ignite Flare. Hitting a tarred enemy consumes the tar and burns them for 16 DPS over 3 seconds.
+* **Shingle Slinger:** TPS aiming applied. Alt-fire consumes 3 ammo for a horizontal 5-shingle shotgun fan.
+* **Weed Wacker (Trimmer):** Continuous rapid-tick melee. Alt-fire consumes 5 gas for a violent 25m/s horizontal Over-rev dash (40 AoE damage at the end).
+* **Felling Axe (Lumberjack):** Alt-fire is *TIMBER!*, a 2.5s overhead slam dealing 150% damage to players and 999 damage to fortifications.
+* **Rocket Mower:** Big Tony's pilotable vehicle. Takes damage for the driver, explodes for 25% max HP blast damage on death.
+
+---
+
+## 🚀 Next Steps / To-Do
+1. **Level Design:** Build the "Suburban House Blockout" with slanted roofs, gutters, and a yard to physically test the parkour and traversal.
+2. **Assets:** Replace the primitive CSG placeholder weapon blocks with actual 3D `.glb` / `.gltf` assets.
+3. **UI:** Add a dedicated crosshair and on-screen cooldown/ammo timers for abilities.
+
+---
+*End of Document. Next Agent: Please append your changes to "Recent Changes" when finishing your session.*
