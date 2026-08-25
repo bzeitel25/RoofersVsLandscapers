@@ -1,5 +1,5 @@
 class_name BaseMelee
-extends BaseTool
+extends "res://scripts/weapons/base_tool.gd"
 
 @export var swing_duration: float = 0.2
 @export var swing_angle: float = 80.0
