@@ -74,7 +74,7 @@ func drop() -> void:
 func _process(delta: float) -> void:
 	super._process(delta)
 	
-	if not wielder or freeze == false or not can_use():
+	if not wielder or freeze == false or not can_use() or not is_visible_in_tree():
 		if _ghost_ladder:
 			_ghost_ladder.hide()
 		return
@@ -91,9 +91,10 @@ func _update_ghost_ladder() -> void:
 		
 	var space_state = wielder.get_world_3d().direct_space_state
 	
-	# Raycast from camera forward
+	# Raycast from camera forward, ONLY hitting World geometry (Layer 1)
 	var query = PhysicsRayQueryParameters3D.create(camera.global_position, camera.global_position - camera.global_transform.basis.z * max_deploy_distance)
 	query.exclude = [wielder.get_rid()]
+	query.collision_mask = 1 # Ignore players and other dynamics
 	
 	var result = space_state.intersect_ray(query)
 	if result and result.normal.y < 0.5: # Hit a wall
@@ -103,6 +104,7 @@ func _update_ghost_ladder() -> void:
 			# Find ground position
 			var ground_pos = result.position
 			var ground_query = PhysicsRayQueryParameters3D.create(result.position + (result.normal * 0.1), result.position + (result.normal * 0.1) - Vector3(0, 15.0, 0))
+			ground_query.collision_mask = 1
 			var ground_result = space_state.intersect_ray(ground_query)
 			if ground_result:
 				ground_pos.y = ground_result.position.y
@@ -110,6 +112,7 @@ func _update_ghost_ladder() -> void:
 			# Find roof height
 			var top_ray_start = result.position - (result.normal * 0.5) + Vector3(0, 15.0, 0)
 			var roof_query = PhysicsRayQueryParameters3D.create(top_ray_start, top_ray_start - Vector3(0, 20.0, 0))
+			roof_query.collision_mask = 1
 			var roof_result = space_state.intersect_ray(roof_query)
 			
 			var target_height = 5.0
