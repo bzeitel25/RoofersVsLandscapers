@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#2D5A27"/>
+  <text x="64" y="50" text-anchor="middle" fill="#FF6B35" font-family="Arial Black" font-size="14" font-weight="bold">ROOFERS</text>
+  <text x="64" y="68" text-anchor="middle" fill="white" font-family="Arial" font-size="10">vs</text>
+  <text x="64" y="86" text-anchor="middle" fill="#4CAF50" font-family="Arial Black" font-size="11" font-weight="bold">LANDSCAPERS</text>
+  <rect x="20" y="95" width="88" height="4" fill="#FF6B35" rx="2"/>
+</svg>
