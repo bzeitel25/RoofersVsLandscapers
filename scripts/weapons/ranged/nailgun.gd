@@ -12,7 +12,7 @@ var _bursts_fired: int = 0
 var _burst_timer: float = 0.0
 
 func _ready() -> void:
-	tool_name = "Pneumatic Nail Gun"
+	tool_name = "Nail Gun"
 	cooldown = 0.8
 	slot_type = 1 # Ranged
 	super._ready()
@@ -88,6 +88,7 @@ func _fire_nail() -> void:
 	# Create projectile
 	var proj = Area3D.new()
 	proj.set_script(PROJECTILE_SCRIPT)
+	proj.status_effect = "nail"
 	wielder.get_tree().current_scene.add_child(proj)
 	
 	# Add simple visual
@@ -110,15 +111,18 @@ func _fire_nail() -> void:
 	proj.body_entered.connect(proj._on_body_entered)
 	
 	# TPS Aiming Logic: Shoot from the weapon towards the crosshair
-	var forward = -camera.global_transform.basis.z
-	
-	# Add some recoil spread to the forward vector
-	forward.x += randf_range(-0.05, 0.05)
-	forward.y += randf_range(-0.05, 0.05)
-	forward = forward.normalized()
+	var target_pos = wielder.get_aim_target() if wielder.has_method("get_aim_target") else (global_position - camera.global_transform.basis.z * 100.0)
 	
 	# Start at the weapon's barrel position
 	var spawn_pos = global_position + (global_transform.basis.z * -0.3)
+	
+	var forward = (target_pos - spawn_pos).normalized()
+	
+	# Add some recoil spread to the forward vector
+	var spread = 0.005 if _is_aiming else 0.02
+	forward.x += randf_range(-spread, spread)
+	forward.y += randf_range(-spread, spread)
+	forward = forward.normalized()
 	
 	proj.initialize(Transform3D(Basis(), spawn_pos), forward * projectile_speed, wielder)
 	
@@ -129,3 +133,40 @@ func _fire_nail() -> void:
 		wielder.velocity -= forward * 2.0
 		
 	print("Nail fired!")
+
+var _is_aiming: bool = false
+var _original_spring_length: float = 5.0
+
+func alt_use_pressed(character: Node3D) -> void:
+	var arm = character.get_node_or_null("CameraPivot/SpringArm3D")
+	var cam = character.get_node_or_null("CameraPivot/SpringArm3D/Camera3D")
+	if arm and cam and not _is_aiming:
+		_is_aiming = true
+		_original_spring_length = arm.spring_length
+		
+		# Slight zoom, keeping 3rd person
+		var tween = create_tween().set_parallel(true)
+		tween.tween_property(arm, "spring_length", 3.0, 0.15)
+		tween.tween_property(cam, "fov", 55.0, 0.15)
+		if "zoom_speed_mult" in character:
+			character.zoom_speed_mult = 0.65
+
+func alt_use_released(character: Node3D) -> void:
+	if not character: return
+	
+	var arm = character.get_node_or_null("CameraPivot/SpringArm3D")
+	var cam = character.get_node_or_null("CameraPivot/SpringArm3D/Camera3D")
+	if arm and cam and _is_aiming:
+		_is_aiming = false
+		
+		# Return to normal third person
+		var tween = create_tween().set_parallel(true)
+		tween.tween_property(arm, "spring_length", _original_spring_length, 0.15)
+		tween.tween_property(cam, "fov", 75.0, 0.15)
+		if "zoom_speed_mult" in character:
+			character.zoom_speed_mult = 1.0
+
+func unequip() -> void:
+	if _is_aiming and wielder:
+		alt_use_released(wielder)
+	super.unequip()

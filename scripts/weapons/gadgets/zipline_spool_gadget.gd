@@ -1,172 +1,126 @@
 class_name ZiplineSpool
 extends BaseTool
 
-const LADDER_SCRIPT = preload("res://scripts/traversal/ladder_object.gd")
+const ZIPLINE_SCRIPT = preload("res://scripts/traversal/zipline_object.gd")
 
-@export var max_deploy_distance: float = 8.0 # From camera
-@export var min_deploy_distance: float = 1.0 # From player
+@export var max_deploy_distance: float = 20.0 # From camera
 
-var _ghost_ladder: Node3D = null
-var _last_valid_pos: Vector3 = Vector3.ZERO
-var _last_valid_normal: Vector3 = Vector3.ZERO
-var _last_valid_height: float = 5.0
-var _can_deploy: bool = false
+var _start_point: Vector3 = Vector3.ZERO
+var _has_start_point: bool = false
+var _ghost_start_peg: MeshInstance3D = null
+var _ghost_line: MeshInstance3D = null
 
 func _ready() -> void:
 	tool_name = "Zipline Spool"
-	cooldown = 15.0
+	cooldown = 20.0
 	slot_type = 2 # Gadget
+	supply_cost = 25 # Costs 25 supplies
 	super._ready()
 	
-	# Create a visual for the handheld ladder gadget
+	# Create a visual for the handheld spool
 	var mat = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.7, 0.4, 0.1) # Wood
+	mat.albedo_color = Color(0.2, 0.2, 0.2)
 	
 	var visual_root = Node3D.new()
-	visual_root.rotation_degrees.x = -60 # Point forward
 	add_child(visual_root)
 	
-	var left_rail = MeshInstance3D.new()
-	var r_mesh = BoxMesh.new()
-	r_mesh.size = Vector3(0.04, 0.6, 0.04)
+	var spool = MeshInstance3D.new()
+	var r_mesh = CylinderMesh.new()
+	r_mesh.height = 0.3
+	r_mesh.top_radius = 0.15
+	r_mesh.bottom_radius = 0.15
 	r_mesh.material = mat
-	left_rail.mesh = r_mesh
-	left_rail.position = Vector3(-0.15, 0, 0)
-	visual_root.add_child(left_rail)
-	
-	var right_rail = MeshInstance3D.new()
-	right_rail.mesh = r_mesh
-	right_rail.position = Vector3(0.15, 0, 0)
-	visual_root.add_child(right_rail)
-	
-	for i in range(3):
-		var rung = MeshInstance3D.new()
-		var rung_mesh = BoxMesh.new()
-		rung_mesh.size = Vector3(0.3, 0.03, 0.03)
-		rung_mesh.material = mat
-		rung.mesh = rung_mesh
-		rung.position = Vector3(0, -0.2 + (i * 0.2), 0)
-		visual_root.add_child(rung)
+	spool.mesh = r_mesh
+	spool.rotation_degrees.z = 90
+	visual_root.add_child(spool)
 
 func equip(new_wielder: Node3D) -> void:
 	super.equip(new_wielder)
 	
-	# Create ghost ladder
-	if not _ghost_ladder:
-		_ghost_ladder = Node3D.new()
-		_ghost_ladder.set_script(LADDER_SCRIPT)
-		_ghost_ladder.is_ghost = true
-		_ghost_ladder.ladder_height = 5.0
-		get_tree().current_scene.add_child(_ghost_ladder)
-		_ghost_ladder.hide()
+	if not _ghost_start_peg:
+		_ghost_start_peg = MeshInstance3D.new()
+		var s_mesh = SphereMesh.new()
+		s_mesh.radius = 0.2
+		s_mesh.height = 0.4
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = Color(1.0, 0.5, 0.0, 0.5) # Orange transparent
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		s_mesh.material = mat
+		_ghost_start_peg.mesh = s_mesh
+		get_tree().current_scene.add_child(_ghost_start_peg)
+		_ghost_start_peg.hide()
+		
+		_ghost_line = MeshInstance3D.new()
+		var l_mesh = CylinderMesh.new()
+		l_mesh.top_radius = 0.02
+		l_mesh.bottom_radius = 0.02
+		l_mesh.material = mat
+		_ghost_line.mesh = l_mesh
+		get_tree().current_scene.add_child(_ghost_line)
+		_ghost_line.hide()
 
 func unequip() -> void:
 	super.unequip()
-	if _ghost_ladder:
-		_ghost_ladder.hide()
+	if _ghost_start_peg: _ghost_start_peg.hide()
+	if _ghost_line: _ghost_line.hide()
+	_has_start_point = false
 
 func drop() -> void:
-	if _ghost_ladder:
-		_ghost_ladder.queue_free()
-		_ghost_ladder = null
+	if _ghost_start_peg: _ghost_start_peg.queue_free()
+	if _ghost_line: _ghost_line.queue_free()
 	super.drop()
 
-func _process(delta: float) -> void:
-	super._process(delta)
-	
+func _process(_delta: float) -> void:
 	if not wielder or freeze == false or not can_use():
-		if _ghost_ladder:
-			_ghost_ladder.hide()
+		if _ghost_start_peg: _ghost_start_peg.hide()
+		if _ghost_line: _ghost_line.hide()
 		return
 	
-	_update_ghost_ladder()
-
-func _update_ghost_ladder() -> void:
-	_can_deploy = false
+	var target = wielder.get_aim_target() if wielder.has_method("get_aim_target") else Vector3.ZERO
+	if target == Vector3.ZERO: return
 	
-	var camera = wielder.get_node_or_null("CameraPivot/SpringArm3D/Camera3D")
-	if not camera:
-		if _ghost_ladder: _ghost_ladder.hide()
-		return
-		
-	var space_state = wielder.get_world_3d().direct_space_state
-	
-	# Raycast from camera forward
-	var query = PhysicsRayQueryParameters3D.create(camera.global_position, camera.global_position - camera.global_transform.basis.z * max_deploy_distance)
-	query.exclude = [wielder.get_rid()]
-	
-	var result = space_state.intersect_ray(query)
-	if result and result.normal.y < 0.5: # Hit a wall
-		var dist_to_player = wielder.global_position.distance_to(result.position)
-		if dist_to_player < max_deploy_distance:
-			
-			# Find ground position
-			var ground_pos = result.position
-			var ground_query = PhysicsRayQueryParameters3D.create(result.position + (result.normal * 0.1), result.position + (result.normal * 0.1) - Vector3(0, 15.0, 0))
-			var ground_result = space_state.intersect_ray(ground_query)
-			if ground_result:
-				ground_pos.y = ground_result.position.y
-				
-			# Find roof height
-			var top_ray_start = result.position - (result.normal * 0.5) + Vector3(0, 15.0, 0)
-			var roof_query = PhysicsRayQueryParameters3D.create(top_ray_start, top_ray_start - Vector3(0, 20.0, 0))
-			var roof_result = space_state.intersect_ray(roof_query)
-			
-			var target_height = 5.0
-			if roof_result:
-				target_height = (roof_result.position.y - ground_pos.y) + 1.2
-			else:
-				target_height = (result.position.y - ground_pos.y) + 2.0
-				
-			target_height = clampf(target_height, 2.0, 20.0)
-			
-			# Lean the ladder 12 degrees
-			var lean_angle = 12.0
-			var lean_dist = (target_height * tan(deg_to_rad(lean_angle))) + 0.4
-			var leaned_ground_pos = ground_pos + (result.normal * lean_dist)
-			
-			_can_deploy = true
-			_last_valid_pos = leaned_ground_pos
-			_last_valid_normal = result.normal
-			_last_valid_height = target_height / cos(deg_to_rad(lean_angle))
-			
-			if _ghost_ladder:
-				_ghost_ladder.global_position = _last_valid_pos
-				var look_target = _last_valid_pos + _last_valid_normal
-				look_target.y = _last_valid_pos.y
-				_ghost_ladder.look_at(look_target, Vector3.UP)
-				_ghost_ladder.rotation_degrees.x = lean_angle
-				
-				_ghost_ladder.show()
-				if _ghost_ladder.has_node("visual_root"):
-					_ghost_ladder.get_node("visual_root").scale.y = _last_valid_height / 5.0
-				_ghost_ladder.set_ghost_valid(true)
-				return
-	
-	if _ghost_ladder:
-		_ghost_ladder.hide()
-
-func primary_action() -> void:
-	if not can_use() or not wielder or not _can_deploy:
+	# Are we close enough to the target point to shoot our zipline there?
+	var dist = wielder.global_position.distance_to(target)
+	if dist > max_deploy_distance:
+		if _ghost_start_peg: _ghost_start_peg.hide()
+		if _ghost_line: _ghost_line.hide()
 		return
 		
-	_deploy_ladder(_last_valid_pos, _last_valid_normal, _last_valid_height)
-	_start_cooldown()
-	
-	if _ghost_ladder:
-		_ghost_ladder.hide()
+	if _ghost_start_peg:
+		_ghost_start_peg.show()
+		
+		if not _has_start_point:
+			_ghost_start_peg.global_position = target
+			if _ghost_line: _ghost_line.hide()
+		else:
+			_ghost_start_peg.global_position = _start_point
+			if _ghost_line:
+				_ghost_line.show()
+				var mid = (_start_point + target) / 2.0
+				var line_dist = _start_point.distance_to(target)
+				_ghost_line.global_position = mid
+				_ghost_line.look_at(target, Vector3.UP)
+				_ghost_line.rotation_degrees.x = 90
+				_ghost_line.mesh.height = line_dist
 
-func _deploy_ladder(deploy_pos: Vector3, wall_normal: Vector3, height: float) -> void:
-	var ladder = Node3D.new()
-	ladder.set_script(LADDER_SCRIPT)
-	ladder.ladder_height = height
+func primary_use_pressed(character: Node3D) -> void:
+	if not can_use(): return
+	if not _ghost_start_peg or not _ghost_start_peg.visible: return
 	
-	var world = wielder.get_tree().current_scene
-	world.add_child(ladder)
+	var target = wielder.get_aim_target()
 	
-	ladder.global_position = deploy_pos
-	
-	var look_target = deploy_pos + wall_normal
-	look_target.y = deploy_pos.y
-	ladder.look_at(look_target, Vector3.UP)
-	ladder.rotation_degrees.x = 12.0
+	if not _has_start_point:
+		_start_point = target
+		_has_start_point = true
+	else:
+		# Deploy the final zipline!
+		var z_obj = ZIPLINE_SCRIPT.new()
+		get_tree().current_scene.add_child(z_obj)
+		z_obj.initialize(_start_point, target)
+		
+		_has_start_point = false
+		_start_cooldown()
+		consume_supplies()
+
+func primary_use_released(character: Node3D) -> void:
+	pass

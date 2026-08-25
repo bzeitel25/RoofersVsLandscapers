@@ -7,6 +7,7 @@ extends Area3D
 
 var velocity: Vector3 = Vector3.ZERO
 var shooter: Node3D = null
+var status_effect: String = ""
 
 func initialize(start_transform: Transform3D, initial_velocity: Vector3, new_shooter: Node3D) -> void:
 	global_transform = start_transform
@@ -45,6 +46,13 @@ func _on_body_entered(body: Node3D) -> void:
 	if body.has_method("take_damage"):
 		# We assume multiplayer framework will handle taking damage authoritatively later
 		body.take_damage(damage, shooter.owning_peer_id if "owning_peer_id" in shooter else 1)
+		
+	if status_effect == "nail" and body.has_method("add_stuck_nail"):
+		body.add_stuck_nail()
+	elif status_effect == "tar" and body.has_method("apply_tar"):
+		body.apply_tar()
+	elif status_effect == "flare" and body.has_method("ignite"):
+		body.ignite()
 		
 	# Spawn impact effect here
 	print("Projectile hit: ", body.name)

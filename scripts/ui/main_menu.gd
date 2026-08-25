@@ -1,4 +1,4 @@
-extends CanvasLayer
+extends Control
 
 var main_panel: PanelContainer
 var ip_input: LineEdit

@@ -74,8 +74,11 @@ func _fire_projectile() -> void:
 	proj.add_child(col)
 	
 	proj.body_entered.connect(proj._on_body_entered)
-	var forward = -camera.global_transform.basis.z
+	
+	var target_pos = wielder.get_aim_target() if wielder.has_method("get_aim_target") else (global_position - camera.global_transform.basis.z * 100.0)
 	var spawn_pos = global_position + (global_transform.basis.z * -1.2)
+	var forward = (target_pos - spawn_pos).normalized()
+	
 	proj.initialize(Transform3D(Basis(), spawn_pos), forward * projectile_speed, wielder)
 
 var _is_zoomed: bool = false
@@ -93,6 +96,8 @@ func alt_use_pressed(character: Node3D) -> void:
 		var tween = create_tween().set_parallel(true)
 		tween.tween_property(arm, "spring_length", 0.0, 0.15)
 		tween.tween_property(cam, "fov", 25.0, 0.15)
+		if "zoom_speed_mult" in character:
+			character.zoom_speed_mult = 0.4
 
 func alt_use_released(character: Node3D) -> void:
 	if not character or not "camera" in character: return
@@ -105,6 +110,8 @@ func alt_use_released(character: Node3D) -> void:
 		var tween = create_tween().set_parallel(true)
 		tween.tween_property(arm, "spring_length", _original_spring_length, 0.15)
 		tween.tween_property(cam, "fov", 75.0, 0.15)
+		if "zoom_speed_mult" in character:
+			character.zoom_speed_mult = 1.0
 
 func unequip() -> void:
 	if _is_zoomed and wielder:

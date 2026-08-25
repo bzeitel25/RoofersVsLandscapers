@@ -39,6 +39,8 @@ class_name PlayerCharacter
 @export var air_control: float = 0.3  ## How much control in the air (0-1)
 
 @export_group("Jumping")
+@export var max_jumps: int = 1               ## Allow double/triple jumps!
+var _jumps_made: int = 0
 @export var jump_force: float = 9.0
 @export var gravity_multiplier: float = 1.5  ## Multiplier on default gravity
 @export var fall_multiplier: float = 2.0     ## Extra gravity when falling (snappier feel)
@@ -76,6 +78,17 @@ var _is_right_shoulder: bool = true
 ## The input direction relative to the camera (set each frame)
 var _input_dir: Vector2 = Vector2.ZERO
 
+## Parkour / Traversal State
+var is_vaulting: bool = false
+var is_sliding: bool = false
+var current_zipline: Node3D = null
+var _vault_target: Vector3
+var _vault_timer: float = 0.0
+
+## Settings
+@export var toggle_ads: bool = false # Menu setting for Hold vs Toggle aiming
+var _is_ads_toggled: bool = false
+
 ## Current health
 var health: float = 100.0
 var max_health: float = 100.0
@@ -101,8 +114,8 @@ func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 3
 	
-	# Fix camera offset and apply over-the-shoulder view
-	camera.position = Vector3(camera_shoulder_offset, 0, 0)
+	# Fix camera offset and apply over-the-shoulder view (offset the SpringArm so it doesn't get overridden)
+	camera_arm.position = Vector3(camera_shoulder_offset, 0, 0)
 	
 	# Add a visor to the character mesh so we know which way they are facing
 	if not character_mesh.has_node("VisorMesh"):
@@ -264,12 +277,22 @@ func _input(event: InputEvent) -> void:
 		elif event.is_action_pressed("secondary_attack"):
 			if loadout_manager:
 				var active_tool = loadout_manager.get_active_tool()
-				if active_tool and active_tool.has_method("alt_use_pressed"):
-					active_tool.alt_use_pressed(self)
-				elif active_tool and active_tool.has_method("alt_use"):
-					active_tool.alt_use(self)
+				if active_tool:
+					# If Toggle ADS is enabled, flip a state tracker.
+					if toggle_ads:
+						_is_ads_toggled = not _is_ads_toggled
+						if _is_ads_toggled:
+							if active_tool.has_method("alt_use_pressed"): active_tool.alt_use_pressed(self)
+							elif active_tool.has_method("alt_use"): active_tool.alt_use(self)
+						else:
+							if active_tool.has_method("alt_use_released"): active_tool.alt_use_released(self)
+					else:
+						# Default Hold-to-ADS behavior
+						if active_tool.has_method("alt_use_pressed"): active_tool.alt_use_pressed(self)
+						elif active_tool.has_method("alt_use"): active_tool.alt_use(self)
+						
 		elif event.is_action_released("secondary_attack"):
-			if loadout_manager:
+			if loadout_manager and not toggle_ads:
 				var active_tool = loadout_manager.get_active_tool()
 				if active_tool and active_tool.has_method("alt_use_released"):
 					active_tool.alt_use_released(self)
@@ -285,10 +308,13 @@ func _input(event: InputEvent) -> void:
 			
 		elif event is InputEventKey and event.pressed and not event.echo:
 			if event.physical_keycode == KEY_1:
+				_is_ads_toggled = false
 				if loadout_manager: loadout_manager.set_active_slot(LoadoutManager.Slot.MELEE)
 			elif event.physical_keycode == KEY_2:
+				_is_ads_toggled = false
 				if loadout_manager: loadout_manager.set_active_slot(LoadoutManager.Slot.RANGED)
 			elif event.physical_keycode == KEY_3:
+				_is_ads_toggled = false
 				if loadout_manager: loadout_manager.set_active_slot(LoadoutManager.Slot.GADGET)
 			elif event.physical_keycode == KEY_4:
 				_use_skill(1)
@@ -302,7 +328,7 @@ func _toggle_shoulder() -> void:
 	_is_right_shoulder = not _is_right_shoulder
 	var target_x = camera_shoulder_offset if _is_right_shoulder else -camera_shoulder_offset
 	var tween = create_tween()
-	tween.tween_property(camera, "position:x", target_x, 0.2).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(camera_arm, "position:x", target_x, 0.2).set_trans(Tween.TRANS_SINE)
 
 func _try_interact() -> void:
 	if interact_ray and interact_ray.is_colliding():
@@ -348,6 +374,26 @@ func _physics_process(delta: float) -> void:
 	if skill_cooldowns[0] > 0: skill_cooldowns[0] -= delta
 	if skill_cooldowns[1] > 0: skill_cooldowns[1] -= delta
 	
+	if _stuck_nail_timer > 0.0:
+		_stuck_nail_timer -= delta
+		if _stuck_nail_timer <= 0.0:
+			stuck_nails = 0
+			print(name, "'s stuck nails fell out.")
+			
+	if is_tarred:
+		_tar_timer -= delta
+		if _tar_timer <= 0.0:
+			is_tarred = false
+			
+	if is_ignited:
+		_ignite_timer -= delta
+		_ignite_tick += delta
+		if _ignite_tick >= 0.5: # Tick damage every 0.5 seconds
+			_ignite_tick -= 0.5
+			take_damage(8.0, -1) # 16 DPS
+		if _ignite_timer <= 0.0:
+			is_ignited = false
+	
 	if not is_alive:
 		return
 
@@ -375,9 +421,11 @@ func _physics_process(delta: float) -> void:
 			exit_vehicle(false)
 		return
 
-	_handle_gravity(delta)
-	_handle_jump(delta)
-	_handle_movement(delta)
+	if not _handle_parkour(delta):
+		_handle_gravity(delta)
+		_handle_jump(delta)
+		_handle_movement(delta)
+	
 	_rotate_character_mesh(delta)
 
 	var rig = character_mesh.get_node_or_null("ChibiRig")
@@ -429,7 +477,12 @@ func _handle_movement(delta: float) -> void:
 
 	# Calculate target speed
 	_is_sprinting = Input.is_action_pressed("sprint") and _input_dir.length() > 0.1
-	var target_speed := move_speed * (sprint_multiplier if _is_sprinting else 1.0)
+	# If we are zoomed in, sprinting is disabled and speed is slowed
+	var sprint_mult = sprint_multiplier if (_is_sprinting and zoom_speed_mult >= 1.0) else 1.0
+	var target_speed := (move_speed * sprint_mult) * zoom_speed_mult
+	
+	if is_tarred:
+		target_speed *= 0.4 # 60% slow from tar
 	
 	if _is_on_ladder and _current_ladder:
 		# Vertical movement on ladder
@@ -503,13 +556,22 @@ func _handle_jump(delta: float) -> void:
 
 	_jump_buffer_timer -= delta
 
-	# Can jump if: on floor OR within coyote time, AND jump was buffered
-	var can_jump := (is_on_floor() or _coyote_timer > 0.0) and _jump_buffer_timer > 0.0
-
-	if can_jump:
+	# Can jump if on floor, coyote time, OR we have air jumps left
+	var is_grounded = is_on_floor() or _coyote_timer > 0.0
+	var can_jump = is_grounded or (_jumps_made < max_jumps)
+	
+	if can_jump and _jump_buffer_timer > 0.0:
 		velocity.y = jump_force
 		_coyote_timer = 0.0
 		_jump_buffer_timer = 0.0
+		
+		if not is_grounded:
+			_jumps_made += 1 # Mid-air jump
+		else:
+			_jumps_made = 1 # Ground jump counts as first jump
+			
+	if is_on_floor():
+		_jumps_made = 0
 
 
 func _rotate_character_mesh(delta: float) -> void:
@@ -517,16 +579,151 @@ func _rotate_character_mesh(delta: float) -> void:
 	if character_mesh:
 		var camera_forward = -camera_pivot.global_transform.basis.z
 		camera_forward.y = 0
-		camera_forward = camera_forward.normalized()
+		if camera_forward.length_squared() > 0.01:
+			var target_basis = Basis.looking_at(camera_forward.normalized(), Vector3.UP)
+			character_mesh.global_transform.basis = character_mesh.global_transform.basis.slerp(target_basis, 15.0 * delta)
+
+## Returns the true 3D position the crosshair is looking at (Warframe style aiming)
+func get_aim_target() -> Vector3:
+	if not camera:
+		return global_position + -global_transform.basis.z * 100.0
 		
-		if camera_forward.length_squared() > 0.001:
-			var target_basis = Basis.looking_at(camera_forward, Vector3.UP)
-			character_mesh.basis = character_mesh.basis.slerp(target_basis, 10.0 * delta)
+	var space_state = get_world_3d().direct_space_state
+	
+	# Raycast from camera center
+	var screen_center = get_viewport().get_visible_rect().size / 2.0
+	var from = camera.project_ray_origin(screen_center)
+	var to = from + camera.project_ray_normal(screen_center) * 1000.0
+	
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.exclude = [self.get_rid()]
+	# Only hit world/environment for aiming, or hit players? Hit everything except us
+	query.collision_mask = 1 | 2 | 4 | 8 
+	
+	var result = space_state.intersect_ray(query)
+	if result:
+		return result.position
+	return to
 		
 		# Also pitch the weapon arm up and down to match camera pitch
 		if hand_attachment_point:
 			hand_attachment_point.rotation.x = camera_pivot.rotation.x
 
+
+# ================================================================
+# ================================================================
+# PARKOUR & TRAVERSAL
+# ================================================================
+
+func mount_zipline(z_obj: Node3D) -> void:
+	current_zipline = z_obj
+	# Snap player onto the line (roughly)
+	var start = z_obj.start_pos
+	var end = z_obj.end_pos
+	var line_dir = (end - start).normalized()
+	var to_player = global_position - start
+	var t = clamp(to_player.dot(line_dir), 0.0, start.distance_to(end))
+	var closest_point = start + line_dir * t
+	global_position = closest_point - Vector3(0, 1.5, 0) # Hang below it
+	velocity = Vector3.ZERO
+	_jumps_made = 0 # reset double jumps
+
+## Returns true if a parkour move is actively overriding normal movement
+func _handle_parkour(delta: float) -> bool:
+	if current_zipline:
+		if Input.is_action_just_pressed("jump"):
+			# Detach and jump off
+			velocity.y = jump_force
+			current_zipline = null
+			return false
+			
+		var start = current_zipline.start_pos
+		var end = current_zipline.end_pos
+		var line_dir = (end - start).normalized()
+		
+		# Move along zipline based on where we are looking (Forward/W key)
+		if Input.is_action_pressed("move_forward"):
+			var look_dir = -camera_pivot.global_transform.basis.z
+			# Dot product to see which way along the wire we want to go
+			var move_dir = line_dir if look_dir.dot(line_dir) > 0 else -line_dir
+			velocity = move_dir * 15.0 # Zipline speed
+		else:
+			# Decelerate
+			velocity = velocity.move_toward(Vector3.ZERO, 30.0 * delta)
+			
+		# Fall off if we reach the ends
+		var to_player = global_position - start
+		var t = to_player.dot(line_dir)
+		if t < 0.0 or t > start.distance_to(end):
+			current_zipline = null
+			
+		return true
+
+	if is_vaulting:
+		_vault_timer += delta * 5.0 # Speed of vault
+		if _vault_timer >= 1.0:
+			is_vaulting = false
+			global_position = _vault_target
+			# Boost slightly forward after vault
+			velocity = -character_mesh.global_transform.basis.z * move_speed * 1.5
+		else:
+			# Tween position
+			var current = global_position
+			var up_target = Vector3(current.x, _vault_target.y, current.z)
+			# Go up first, then forward
+			if _vault_timer < 0.5:
+				global_position = current.lerp(up_target, _vault_timer * 2.0)
+			else:
+				global_position = current.lerp(_vault_target, (_vault_timer - 0.5) * 2.0)
+		return true
+
+	# Attempt Ledge Grab / Vault
+	if not is_on_floor() and velocity.y < 0.0:
+		var space = get_world_3d().direct_space_state
+		var forward = -character_mesh.global_transform.basis.z
+		
+		# Ray 1: Chest height (Detect wall)
+		var chest_pos = global_position + Vector3(0, 1.0, 0)
+		var q_chest = PhysicsRayQueryParameters3D.create(chest_pos, chest_pos + forward * 0.8)
+		q_chest.collision_mask = 1
+		
+		if space.intersect_ray(q_chest):
+			# Ray 2: Head height (Check space above wall)
+			var head_pos = global_position + Vector3(0, 2.0, 0)
+			var q_head = PhysicsRayQueryParameters3D.create(head_pos, head_pos + forward * 0.8)
+			q_head.collision_mask = 1
+			
+			if not space.intersect_ray(q_head):
+				# Ray 3: Downward from above wall (Find exact top surface)
+				var down_start = head_pos + forward * 0.8
+				var q_down = PhysicsRayQueryParameters3D.create(down_start, down_start + Vector3(0, -1.0, 0))
+				q_down.collision_mask = 1
+				var hit = space.intersect_ray(q_down)
+				
+				if hit and Input.is_action_pressed("jump"): # Must hold jump to vault
+					is_vaulting = true
+					_vault_timer = 0.0
+					_vault_target = hit.position
+					velocity = Vector3.ZERO
+					print("Vaulting!")
+					return true
+					
+	# Roof Sliding
+	if is_on_floor():
+		var floor_n = get_floor_normal()
+		var angle = rad_to_deg(acos(floor_n.dot(Vector3.UP)))
+		
+		# If on a slant, and we press crouch (or slide action)
+		if angle > 5.0 and Input.is_action_pressed("crouch"): # Note: Need to map 'crouch' in Godot InputMap
+			is_sliding = true
+			var slide_dir = Vector3(floor_n.x, 0, floor_n.z).normalized()
+			# Accelerate down the roof
+			velocity.x += slide_dir.x * 20.0 * delta
+			velocity.z += slide_dir.z * 20.0 * delta
+		else:
+			is_sliding = false
+			
+	return false
 
 # ================================================================
 # HEALTH & DAMAGE (Server-Authoritative)
@@ -593,6 +790,39 @@ func take_damage(amount: float, from_peer_id: int) -> void:
 	if health <= 0.0:
 		_die(from_peer_id)
 
+var stuck_nails: int = 0
+var _stuck_nail_timer: float = 0.0
+
+var is_tarred: bool = false
+var _tar_timer: float = 0.0
+var is_ignited: bool = false
+var _ignite_timer: float = 0.0
+var _ignite_tick: float = 0.0
+
+func add_stuck_nail() -> void:
+	stuck_nails += 1
+	_stuck_nail_timer = 5.0 # Nails fall out after 5 seconds
+	print(name, " has ", stuck_nails, " nails stuck in them!")
+
+func consume_stuck_nails() -> int:
+	var count = stuck_nails
+	stuck_nails = 0
+	return count
+
+func apply_tar() -> void:
+	is_tarred = true
+	_tar_timer = 4.0
+	print(name, " is covered in TAR!")
+
+func ignite() -> void:
+	if is_tarred:
+		is_ignited = true
+		_ignite_timer = 3.0 # Burn for 3 seconds
+		is_tarred = false # Tar is consumed by the fire
+		print(name, " has IGNITED!")
+	else:
+		# Mini burn if not tarred
+		take_damage(5.0, -1)
 func heal(amount: float) -> void:
 	if not is_alive: return
 	health += amount
@@ -655,10 +885,55 @@ var special_ammo: Dictionary = {
 }
 var skill_cooldowns: Array[float] = [0.0, 0.0]
 
+var zoom_speed_mult: float = 1.0 # Modified by weapons when aiming
+
+func _apply_class_stats() -> void:
+	# Default (Medium Class)
+	max_jumps = 1
+	move_speed = 6.0
+	jump_force = 9.0
+	sprint_multiplier = 1.4
+	
+	# Group classes by weight for easier baseline stats
+	var is_light = false
+	var is_heavy = false
+	
+	if current_team == 0: # ROOFERS
+		if current_class_enum in [TeamManager.RooferClass.APPRENTICE, TeamManager.RooferClass.SHINGLE_SLINGER]:
+			is_light = true
+		elif current_class_enum in [TeamManager.RooferClass.TAR_KING, TeamManager.RooferClass.HVAC_TECH, TeamManager.RooferClass.MAG_SWEEP]:
+			is_heavy = true
+			
+	elif current_team == 1: # LANDSCAPERS
+		if current_class_enum in [TeamManager.LandscaperClass.CLIMBER, TeamManager.LandscaperClass.TRIMMER]:
+			is_light = true
+		elif current_class_enum in [TeamManager.LandscaperClass.LUMBERJACK, TeamManager.LandscaperClass.MOWER, TeamManager.LandscaperClass.SPRINKLER]:
+			is_heavy = true
+
+	# Apply archetype base stats
+	if is_light:
+		max_jumps = 2           # Double jump for all light classes
+		move_speed = 6.5        # Faster base speed
+		sprint_multiplier = 1.8 # Much faster sprint
+		jump_force = 9.5
+	elif is_heavy:
+		max_jumps = 1
+		move_speed = 5.0
+		sprint_multiplier = 1.3 # Sluggish sprint
+		jump_force = 8.5
+		
+	# Specific Class Overrides
+	if current_team == 1 and current_class_enum == TeamManager.LandscaperClass.CLIMBER:
+		max_jumps = 3 # Climber gets TRIPLE jump!
+		jump_force = 10.0
+		move_speed = 6.8
+		sprint_multiplier = 1.85
+
 ## Set up the initial class loadout
 func setup_class(team: int, class_enum: int) -> void:
 	current_team = team
 	current_class_enum = class_enum
+	_apply_class_stats()
 	
 	if not loadout_manager:
 		await ready
@@ -669,11 +944,11 @@ func setup_class(team: int, class_enum: int) -> void:
 		if class_enum == TeamManager.RooferClass.NAILER:
 			var pry_bar = load("res://scripts/weapons/melee/pry_bar.gd").new()
 			var nailgun = load("res://scripts/weapons/ranged/nailgun.gd").new()
-			var gadget = load("res://scripts/weapons/gadgets/zipline_spool_gadget.gd").new()
+			var ladder = load("res://scripts/weapons/gadgets/extension_ladder_tool.gd").new()
 			
 			loadout_manager.set_tool(LoadoutManager.Slot.MELEE, pry_bar)
 			loadout_manager.set_tool(LoadoutManager.Slot.RANGED, nailgun)
-			loadout_manager.set_tool(LoadoutManager.Slot.GADGET, gadget)
+			loadout_manager.set_tool(LoadoutManager.Slot.GADGET, ladder)
 		elif class_enum == TeamManager.RooferClass.FOREMAN:
 			var m = load("res://scripts/weapons/melee/foreman_melee.gd").new()
 			var r = load("res://scripts/weapons/ranged/foreman_ranged.gd").new()
@@ -742,11 +1017,11 @@ func setup_class(team: int, class_enum: int) -> void:
 		if class_enum == TeamManager.LandscaperClass.GARDENER:
 			var knife = load("res://scripts/weapons/melee/pocket_knife.gd").new()
 			var slingshot = load("res://scripts/weapons/ranged/slingshot.gd").new()
-			var gadget = load("res://scripts/weapons/gadgets/pest_control_gadget.gd").new()
+			var ladder = load("res://scripts/weapons/gadgets/extension_ladder_tool.gd").new()
 			
 			loadout_manager.set_tool(LoadoutManager.Slot.MELEE, knife)
 			loadout_manager.set_tool(LoadoutManager.Slot.RANGED, slingshot)
-			loadout_manager.set_tool(LoadoutManager.Slot.GADGET, gadget)
+			loadout_manager.set_tool(LoadoutManager.Slot.GADGET, ladder)
 		elif class_enum == TeamManager.LandscaperClass.LUMBERJACK:
 			var m = load("res://scripts/weapons/melee/lumberjack_melee.gd").new()
 			var r = load("res://scripts/weapons/ranged/lumberjack_ranged.gd").new()

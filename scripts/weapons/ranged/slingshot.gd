@@ -124,14 +124,13 @@ func _fire_projectile() -> void:
 	proj.body_entered.connect(proj._on_body_entered)
 	
 	# TPS Aiming Logic: Shoot from the weapon towards the crosshair
-	var forward = -camera.global_transform.basis.z
+	var target_pos = wielder.get_aim_target() if wielder.has_method("get_aim_target") else (global_position - camera.global_transform.basis.z * 100.0)
+	var spawn_pos = global_position + (global_transform.basis.z * -0.2) + (global_transform.basis.y * 0.1)
+	var forward = (target_pos - spawn_pos).normalized()
 	
 	# Upward arc based on charge (less arc if fully charged)
 	forward.y += lerp(0.3, 0.05, charge_ratio)
 	forward = forward.normalized()
-	
-	# Start at the weapon's barrel position
-	var spawn_pos = global_position + (global_transform.basis.z * -0.2) + (global_transform.basis.y * 0.1)
 	
 	proj.initialize(Transform3D(Basis(), spawn_pos), forward * (projectile_speed * speed_mult), wielder)
 	
@@ -225,11 +224,12 @@ func _fire_special_projectile(ammo_type: String) -> void:
 	
 	proj.body_entered.connect(proj._on_body_entered)
 	
-	var forward = -camera.global_transform.basis.z
+	var target_pos = wielder.get_aim_target() if wielder.has_method("get_aim_target") else (global_position - camera.global_transform.basis.z * 100.0)
+	var spawn_pos = global_position + (global_transform.basis.z * -0.2) + (global_transform.basis.y * 0.1)
+	var forward = (target_pos - spawn_pos).normalized()
+	
 	forward.y += lerp(0.3, 0.05, charge_ratio)
 	forward = forward.normalized()
-	
-	var spawn_pos = global_position + (global_transform.basis.z * -0.2) + (global_transform.basis.y * 0.1)
 	
 	proj.initialize(Transform3D(Basis(), spawn_pos), forward * (projectile_speed * speed_mult), wielder)
 	

@@ -54,3 +54,42 @@ func _ready() -> void:
 	hook.position = Vector3(0, 1.05, 0.075) # Positioned at the top, jutting forward
 	hook.rotation_degrees = Vector3(15, 0, 0) # Slight angle
 	visual_root.add_child(hook)
+
+func alt_use_pressed(character: Node3D) -> void:
+	if not can_use() or not wielder: return
+	
+	_start_cooldown()
+	_play_swing_animation()
+	
+	# Raycast for the alt-fire (similar to melee strike but shorter/more precise)
+	var camera = wielder.get_node_or_null("CameraPivot/SpringArm3D/Camera3D")
+	if not camera: return
+	
+	var space_state = wielder.get_world_3d().direct_space_state
+	var forward = -camera.global_transform.basis.z
+	var start_pos = wielder.global_position + Vector3(0, 1.5, 0)
+	var end_pos = start_pos + (forward * range_dist * 1.2) # Slightly longer reach for the hook
+	
+	var query = PhysicsRayQueryParameters3D.create(start_pos, end_pos)
+	query.exclude = [wielder.get_rid()]
+	query.collision_mask = 3
+	
+	var result = space_state.intersect_ray(query)
+	if result:
+		var collider = result.collider
+		if collider.has_method("take_damage"):
+			if collider.has_method("consume_stuck_nails"):
+				var nails = collider.consume_stuck_nails()
+				if nails > 0:
+					# NAIL PULLER SYNERGY!
+					var burst = nails * 15.0
+					print("Nail Puller! Ripped out ", nails, " nails for ", burst, " bonus damage!")
+					collider.take_damage(damage + burst, wielder.owning_peer_id if "owning_peer_id" in wielder else 1)
+					
+					# Spawn a blood/metal burst effect here in the future
+				else:
+					# Standard hit if no nails
+					collider.take_damage(damage * 0.5, wielder.owning_peer_id if "owning_peer_id" in wielder else 1)
+			else:
+				# Deconstructor synergy placeholder for gadgets
+				collider.take_damage(damage * 3.0, wielder.owning_peer_id if "owning_peer_id" in wielder else 1)
