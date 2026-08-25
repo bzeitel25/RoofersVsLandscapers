@@ -1,5 +1,5 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1787693368
+::res://::1787699909
 AGENTS.md::TextFile::-1::1787674081::0::1::::<><><>0<>0<><>::
 AGENT_HANDOFF.md::TextFile::-1::1787680409::0::1::::<><><>0<>0<><>::
 Art_Direction_Addendum.md::TextFile::-1::1787678155::0::1::::<><><>0<>0<><>::
@@ -53,7 +53,7 @@ network_manager.gd::GDScript::774317739153493010::1787625243::0::1::::<>Node<><>
 team_manager.gd::GDScript::3296604399082744488::1787597619::0::1::::<>Node<><>0<>0<><>::
 ::res://scripts/characters/::1787617491
 chibi_rig.gd::GDScript::8020274817639495702::1787619670::0::1::::ChibiRig<>Node3D<><>0<>0<><>::
-player_character.gd::GDScript::7159400247334058921::1787679891::0::1::::PlayerCharacter<>CharacterBody3D<><>0<>0<><>::
+player_character.gd::GDScript::7159400247334058921::1787693760::0::1::::PlayerCharacter<>CharacterBody3D<><>0<>0<><>::
 ::res://scripts/characters/components/::1787600959
 loadout_manager.gd::GDScript::2731565042678198795::1787619681::0::1::::LoadoutManager<>Node<><>0<>0<><>::
 ::res://scripts/items/::1787625049
@@ -80,12 +80,12 @@ cleanup_guy_gadget.gd::GDScript::3900564140272831069::1787680551::0::1::::<>Rigi
 climber_gadget.gd::GDScript::7318469377345963299::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 electrician_gadget.gd::GDScript::511488964964428122::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 extension_ladder_tool.gd::GDScript::3285083096089768677::1787680551::0::1::::ExtensionLadderTool<>RigidBody3D<><>0<>0<><>::
-foreman_gadget.gd::GDScript::6481579590789239568::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
-foreman_shield.gd::GDScript::4732962190264860569::1787680551::0::1::::<>StaticBody3D<><>0<>0<><>::
+foreman_gadget.gd::GDScript::6481579590789239568::1787693646::0::1::::<>RigidBody3D<><>0<>0<><>::
+foreman_shield.gd::GDScript::4732962190264860569::1787693631::0::1::::<>StaticBody3D<><>0<>0<><>::
 gutter_sniper_gadget.gd::GDScript::5877845407433046829::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 hobbyist_gadget.gd::GDScript::4921723377823647474::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 hvac_tech_gadget.gd::GDScript::1505752457447201158::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
-lumberjack_gadget.gd::GDScript::7811216373313558964::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
+lumberjack_gadget.gd::GDScript::7811216373313558964::1787693571::0::1::::<>RigidBody3D<><>0<>0<><>::
 mag_sweep_gadget.gd::GDScript::3907710583062837447::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 mower_gadget.gd::GDScript::8322258369184558439::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 pest_control_gadget.gd::GDScript::1725330670430883630::1787680551::0::1::::PestControl<>RigidBody3D<><>0<>0<><>::
@@ -97,7 +97,7 @@ trimmer_gadget.gd::GDScript::1306832762920008357::1787680551::0::1::::<>RigidBod
 zipline_spool_gadget.gd::GDScript::3334735611702431352::1787680551::0::1::::ZiplineSpool<>RigidBody3D<><>0<>0<><>::
 ::res://scripts/weapons/melee/::1787609349
 apprentice_melee.gd::GDScript::193764583095888180::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
-base_melee.gd::GDScript::4558261979098541173::1787680744::0::1::::BaseMelee<>RigidBody3D<><>0<>0<><>::
+base_melee.gd::GDScript::4558261979098541173::1787693656::0::1::::BaseMelee<>RigidBody3D<><>0<>0<><>::
 blower_melee.gd::GDScript::2965102085050627678::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 botanist_melee.gd::GDScript::761799953167159279::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 cleanup_guy_melee.gd::GDScript::4902352973988586285::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
@@ -111,12 +111,12 @@ lumberjack_melee.gd::GDScript::4142979483124888095::1787680551::0::1::::<>RigidB
 mag_sweep_melee.gd::GDScript::8733800465068158680::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 mower_melee.gd::GDScript::5267452993475815259::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 pocket_knife.gd::GDScript::4636829059105494198::1787680551::0::1::::PocketKnife<>RigidBody3D<><>0<>0<><>::
-pry_bar.gd::GDScript::38094483951962633::1787680551::0::1::::PryBar<>RigidBody3D<><>0<>0<><>::
+pry_bar.gd::GDScript::38094483951962633::1787693605::0::1::::PryBar<>RigidBody3D<><>0<>0<><>::
 raker_melee.gd::GDScript::971643492273407731::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 shingle_slinger_melee.gd::GDScript::125001641527395942::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 sprinkler_melee.gd::GDScript::8923421980640460609::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 tar_king_melee.gd::GDScript::8562998292916093844::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
-trimmer_melee.gd::GDScript::2350140119363076100::1787680551::0::1::::WeedWacker<>RigidBody3D<><>0<>0<><>::
+trimmer_melee.gd::GDScript::2350140119363076100::1787693624::0::1::::WeedWacker<>RigidBody3D<><>0<>0<><>::
 ::res://scripts/weapons/ranged/::1787609349
 apprentice_ranged.gd::GDScript::467615935432801140::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 base_projectile.gd::GDScript::5160627985878770852::1787680551::0::1::::BaseProjectile<>Area3D<><>0<>0<><>::

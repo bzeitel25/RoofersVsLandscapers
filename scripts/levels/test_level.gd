@@ -87,6 +87,13 @@ func _ready() -> void:
 	
 	# Start player as Gardener by default
 	player.setup_class(1, TeamManager.LandscaperClass.GARDENER)
+	
+	# Spawn a resupply box nearby for unlimited testing
+	var SupplyBox = load("res://scripts/items/supply_box.gd")
+	var box = SupplyBox.new()
+	box.infinite_respawn = true
+	add_child(box)
+	box.global_position = player.global_position + Vector3(0, 0, -4.0) # 4 meters in front of spawn
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):

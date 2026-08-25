@@ -1,5 +1,7 @@
 extends Area3D
 
+@export var infinite_respawn: bool = false
+
 @export var ammo_restored_percent: float = 1.0 # 100% by default
 @export var supplies_restored: int = 50
 
@@ -32,7 +34,7 @@ func _ready() -> void:
 	tween.tween_property(self, "rotation_degrees:y", 360.0, 3.0).as_relative()
 
 func _on_body_entered(body: Node3D) -> void:
-	if not body.has_method("_is_local_player"):
+	if not body.is_in_group("players") and body.name != "Player":
 		return
 		
 	var used = false
@@ -56,4 +58,12 @@ func _on_body_entered(body: Node3D) -> void:
 	if used:
 		# Play a sound here eventually
 		print("Picked up Universal Supply Box!")
-		queue_free()
+		if infinite_respawn:
+			# Hide and disable temporarily
+			hide()
+			set_deferred("monitoring", false)
+			await get_tree().create_timer(3.0).timeout
+			show()
+			set_deferred("monitoring", true)
+		else:
+			queue_free()

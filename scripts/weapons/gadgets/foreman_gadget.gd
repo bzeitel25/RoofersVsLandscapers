@@ -42,8 +42,8 @@ func primary_action() -> void:
 	
 	var space_state = wielder.get_world_3d().direct_space_state
 	
-	# Flat forward for placement logic
-	var forward = -wielder.global_transform.basis.z
+	# Flat forward for placement logic based on CAMERA direction
+	var forward = -wielder.camera.global_transform.basis.z
 	forward.y = 0
 	forward = forward.normalized()
 	if forward.length_squared() < 0.001:
