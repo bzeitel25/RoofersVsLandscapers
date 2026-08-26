@@ -41,9 +41,9 @@ class_name PlayerCharacter
 @export_group("Jumping")
 @export var max_jumps: int = 1               ## Allow double/triple jumps!
 var _jumps_made: int = 0
-@export var jump_force: float = 12.0
-@export var gravity_multiplier: float = 1.2  ## Multiplier on default gravity
-@export var fall_multiplier: float = 1.5     ## Extra gravity when falling (snappier feel)
+@export var jump_force: float = 8.0
+@export var gravity_multiplier: float = 1.6  ## Multiplier on default gravity
+@export var fall_multiplier: float = 2.4     ## Extra gravity when falling (snappier feel)
 @export var coyote_time: float = 0.15        ## Grace period after leaving edge
 @export var jump_buffer: float = 0.1         ## Buffer window for jump input
 
@@ -56,6 +56,7 @@ var _jumps_made: int = 0
 
 @export_group("Multiplayer")
 @export var owning_peer_id: int = 1  ## Which peer controls this character
+@export var can_hotwire: bool = false
 
 # --- Node References ---
 # These are set up in the scene tree (see player_character.tscn)
@@ -205,13 +206,10 @@ func _create_placeholder_visor() -> void:
 		if child is MeshInstance3D or child is Sprite3D or child.name == "ChibiRig":
 			child.queue_free()
 	
-	# Team color identification
-	var team_id = 0
-	if "owning_peer_id" in self and owning_peer_id != 1 and GameManager.has_method("get_team"):
-		# Quick guess, will default to blue for local, green for dummy
-		team_id = GameManager.get_team(owning_peer_id)
-	elif owning_peer_id == -1:
-		team_id = 1
+	# Team colour identification: colour the rig by the class's ASSIGNED team so shirts
+	# match the team (Roofers = blue, Landscapers = green). current_team is -1 until
+	# setup_class runs; fall back to team 0 for the initial placeholder.
+	var team_id = current_team if current_team >= 0 else 0
 		
 	# Instantiate and inject the procedural chibi rig
 	var ChibiRigClass = preload("res://scripts/characters/chibi_rig.gd")
@@ -514,8 +512,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if current_vehicle:
-		# Lock player to vehicle seat and skip regular physics
-		global_position = current_vehicle.global_position + Vector3(0, 1.0, 0)
+		# Lock player to vehicle if it doesn't handle positioning itself
+		if not current_vehicle.has_method("remove_passenger"):
+			global_position = current_vehicle.global_position + Vector3(0, 1.0, 0)
 		
 		# Allow jumping out
 		if Input.is_action_just_pressed("interact") or Input.is_action_just_pressed("jump"):
@@ -784,13 +783,13 @@ func _handle_parkour(delta: float) -> bool:
 		var forward = -character_mesh.global_transform.basis.z
 		
 		# Ray 1: Chest height (Detect wall)
-		var chest_pos = global_position + Vector3(0, 1.0, 0)
+		var chest_pos = global_position + Vector3(0, 0.6, 0)
 		var q_chest = PhysicsRayQueryParameters3D.create(chest_pos, chest_pos + forward * 0.8)
 		q_chest.collision_mask = 1
 		
 		if space.intersect_ray(q_chest):
 			# Ray 2: Head height (Check space above wall)
-			var head_pos = global_position + Vector3(0, 2.0, 0)
+			var head_pos = global_position + Vector3(0, 1.2, 0)
 			var q_head = PhysicsRayQueryParameters3D.create(head_pos, head_pos + forward * 0.8)
 			q_head.collision_mask = 1
 			
@@ -845,9 +844,15 @@ func enter_vehicle(vehicle: Node3D) -> void:
 func exit_vehicle(ejected: bool = false) -> void:
 	if not current_vehicle: return
 	
-	if current_vehicle and "driver" in current_vehicle:
+	if current_vehicle.has_method("remove_passenger"):
+		current_vehicle.remove_passenger(self)
+	elif "driver" in current_vehicle:
 		current_vehicle.driver = null
 		
+	# Eject player to the side of the car so they don't get stuck inside it
+	var eject_dir = current_vehicle.global_transform.basis.x if randf() > 0.5 else -current_vehicle.global_transform.basis.x
+	global_position = current_vehicle.global_position + eject_dir * 1.5 + Vector3(0, 1.0, 0)
+	
 	current_vehicle = null
 	character_mesh.visible = true
 	
@@ -992,7 +997,7 @@ func _apply_class_stats() -> void:
 	# Default (Medium Class)
 	max_jumps = 1
 	move_speed = 6.0
-	jump_force = 9.0
+	jump_force = 7.0
 	sprint_multiplier = 1.4
 	
 	# Group classes by weight for easier baseline stats
@@ -1016,24 +1021,32 @@ func _apply_class_stats() -> void:
 		max_jumps = 2           # Double jump for all light classes
 		move_speed = 6.5        # Faster base speed
 		sprint_multiplier = 1.8 # Much faster sprint
-		jump_force = 9.5
+		jump_force = 7.3
 	elif is_heavy:
 		max_jumps = 1
 		move_speed = 5.0
 		sprint_multiplier = 1.3 # Sluggish sprint
-		jump_force = 8.5
+		jump_force = 6.4
 		
 	# Specific Class Overrides
 	if current_team == 1 and current_class_enum == TeamManager.LandscaperClass.CLIMBER:
 		max_jumps = 3 # Climber gets TRIPLE jump!
-		jump_force = 10.0
+		jump_force = 7.8
 		move_speed = 6.8
 		sprint_multiplier = 1.85
+		
+	# Vehicle Abilities
+	can_hotwire = false
+	if current_team == 0 and current_class_enum in [TeamManager.RooferClass.FOREMAN, TeamManager.RooferClass.ELECTRICIAN, TeamManager.RooferClass.HVAC_TECH]:
+		can_hotwire = true
+	elif current_team == 1 and current_class_enum in [TeamManager.LandscaperClass.MOWER, TeamManager.LandscaperClass.SPRINKLER, TeamManager.LandscaperClass.TRIMMER]:
+		can_hotwire = true
 
 ## Set up the initial class loadout
 func setup_class(team: int, class_enum: int) -> void:
 	current_team = team
 	current_class_enum = class_enum
+	_create_placeholder_visor()  # rebuild the chibi rig in the correct team colours
 	_apply_class_stats()
 	
 	if not loadout_manager:
