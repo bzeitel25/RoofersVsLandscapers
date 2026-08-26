@@ -13,7 +13,8 @@ func _ready() -> void:
 	
 	var mi = MeshInstance3D.new()
 	var cm = CylinderMesh.new()
-	cm.radius = 0.15
+	cm.top_radius = 0.15
+	cm.bottom_radius = 0.15
 	cm.height = 0.35
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.8, 0.1, 0.1) # Red paint can
