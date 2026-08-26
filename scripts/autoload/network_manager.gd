@@ -53,6 +53,9 @@ var lobby_players: Dictionary = {}
 ## Server IP/address for clients
 var server_address: String = "127.0.0.1"
 
+## Local player name
+var player_name: String = ""
+
 ## The ENet multiplayer peer
 var peer: WebSocketMultiplayerPeer = null
 
@@ -294,5 +297,6 @@ func _get_player_list() -> Array:
 
 
 func _get_local_player_name() -> String:
-	# TODO: Pull from settings/profile
+	if player_name != "":
+		return player_name
 	return "Player_%d" % randi_range(1000, 9999)

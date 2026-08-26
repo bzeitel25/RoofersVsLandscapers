@@ -241,7 +241,7 @@ func _show_lobby() -> void:
 	# Hide main panel, show lobby
 	get_child(0).hide()
 	lobby_panel.show()
-	_on_lobby_updated(NetworkManager.get_lobby_players())
+	_on_lobby_updated(NetworkManager._get_player_list())
 	start_button.visible = NetworkManager.is_host
 
 func _on_lobby_updated(players: Array) -> void:
@@ -253,4 +253,8 @@ func _on_lobby_updated(players: Array) -> void:
 func _on_start_match_pressed() -> void:
 	# Host tells everyone to start
 	if NetworkManager.is_host:
-		NetworkManager.start_match.rpc(team_dropdown.selected, class_dropdown.selected)
+		_load_level.rpc("res://scenes/main/suburban_arena.tscn")
+
+@rpc("call_local", "reliable")
+func _load_level(path: String) -> void:
+	get_tree().change_scene_to_file(path)
