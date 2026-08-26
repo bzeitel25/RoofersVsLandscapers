@@ -541,7 +541,25 @@ func _physics_process(delta: float) -> void:
 		var active_tool = loadout_manager.get_active_tool() if loadout_manager else null
 		rig.update_animation(velocity, is_on_floor(), delta, active_tool)
 
+	# Store vertical velocity before move_and_slide applies floor collision
+	var pre_fall_velocity_y = velocity.y
+
 	move_and_slide()
+
+	# Fall damage logic
+	if is_on_floor() and not _was_on_floor:
+		# We just landed this frame.
+		# A jump force is ~12.0. A 2-story fall hits ~ -20.0. 
+		# We'll set the safe threshold at -16.0 (approx 1.5 stories).
+		var fall_threshold = -16.0
+		if pre_fall_velocity_y < fall_threshold:
+			var excess = abs(pre_fall_velocity_y - fall_threshold)
+			var fall_dmg = excess * 10.0 # 1 m/s extra = 10 damage. (20m/s = 40 damage)
+			
+			# Ensure we only take fall damage on our own client (authoritative for now)
+			if _is_local_player():
+				print("HARD LANDING! Impact velocity: ", pre_fall_velocity_y, " | Damage: ", fall_dmg)
+				take_damage(fall_dmg, owning_peer_id) # Self damage
 
 	# Track floor state for coyote time
 	if is_on_floor():
