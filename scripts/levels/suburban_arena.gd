@@ -391,6 +391,50 @@ func _build_single_house(house: Node3D, index: int, sp) -> void:
 
 	_build_porch(house, W, D, wall_mat, roof_mat)
 	_build_yard(house, index, W, D, float(garage_side if garage_side != 0 else 1))
+	_scatter_traps(house, W, D, n)
+
+func _scatter_traps(house: Node3D, W: float, D: float, stories: int) -> void:
+	var SlipTrap = load("res://scripts/environment/slip_trap.gd")
+	var PaintTrap = load("res://scripts/environment/paint_can_trap.gd")
+	if not SlipTrap or not PaintTrap: return
+	
+	# 1-3 Slip Traps per floor
+	for i in range(stories):
+		var floor_y = i * story_height
+		var traps = randi_range(1, 3)
+		for t in range(traps):
+			var rx = randf_range(-W*0.4, W*0.4)
+			var rz = randf_range(-D*0.4, D*0.4)
+			var trap = Area3D.new()
+			trap.set_script(SlipTrap)
+			house.add_child(trap)
+			trap.position = Vector3(rx, floor_y + 0.1, rz)
+			
+			var mi = MeshInstance3D.new()
+			var bm = BoxMesh.new()
+			bm.size = Vector3(0.4, 0.1, 0.4)
+			mi.mesh = bm
+			var mat = StandardMaterial3D.new()
+			mat.albedo_color = Color(0.2, 0.2, 0.8) # Blue marbles
+			mi.material_override = mat
+			trap.add_child(mi)
+			
+			var cs = CollisionShape3D.new()
+			var shape = BoxShape3D.new()
+			shape.size = Vector3(0.5, 0.2, 0.5)
+			cs.shape = shape
+			trap.add_child(cs)
+			
+	# Paint Cans near the ceiling above doors/ramps
+	for i in range(stories):
+		var floor_y = i * story_height
+		if randf() > 0.5: # 50% chance per floor
+			var rx = randf_range(-W*0.2, W*0.2)
+			var rz = randf_range(-D*0.2, D*0.2)
+			var trap = Area3D.new()
+			trap.set_script(PaintTrap)
+			house.add_child(trap)
+			trap.position = Vector3(rx, floor_y + story_height - 0.5, rz)
 
 func _build_floors(house: Node3D, W: float, D: float, n: int, floor_mat: StandardMaterial3D, wall_mat: StandardMaterial3D) -> void:
 	var xh := W * 0.5

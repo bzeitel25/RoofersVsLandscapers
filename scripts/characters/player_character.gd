@@ -118,8 +118,16 @@ func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 3
 	
-	# Fix camera offset and apply over-the-shoulder view (offset the SpringArm so it doesn't get overridden)
+	# Fix camera offset and apply over-the-shoulder view
 	camera_arm.position = Vector3(camera_shoulder_offset, 0, 0)
+	camera_arm.spring_length = camera_distance
+	
+	# Give the spring arm a shape so it collides with walls using a volume instead of a point ray
+	var arm_shape = SphereShape3D.new()
+	arm_shape.radius = 0.4
+	camera_arm.shape = arm_shape
+	camera_arm.margin = 0.1
+	camera_arm.collision_mask = 1 # Only collide with world geometry
 	
 	# Add a visor to the character mesh so we know which way they are facing
 	if not character_mesh.has_node("VisorMesh"):
