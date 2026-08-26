@@ -1,1 +1,5 @@
 res://scenes/main/main_menu.tscn
+res://scripts/levels/test_level.gd
+res://scripts/characters/player_character.gd
+res://scripts/ui/main_menu.gd
+res://scripts/environment/paint_can_trap.gd

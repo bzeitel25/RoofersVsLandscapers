@@ -34,16 +34,41 @@ func _ready() -> void:
 	handle.material_override = handle_mat
 	visual_root.add_child(handle)
 	
+	# Axe head: blade juts FORWARD (-Z) from the top of the shaft (cutting edge vertical),
+	# so the axe is held shaft-up with the blade pointing where you aim.
 	var head_mesh = BoxMesh.new()
-	head_mesh.size = Vector3(0.4, 0.3, 0.1)
+	head_mesh.size = Vector3(0.12, 0.5, 0.45)
 	var head = MeshInstance3D.new()
 	head.mesh = head_mesh
-	head.position = Vector3(0.15, 1.1, 0)
+	head.position = Vector3(0.0, 1.05, -0.22)
 	var head_mat = StandardMaterial3D.new()
 	head_mat.albedo_color = Color(0.2, 0.2, 0.2)
 	head_mat.metallic = 0.8
 	head.material_override = head_mat
 	visual_root.add_child(head)
+	# Small back poll for balance.
+	var poll = MeshInstance3D.new()
+	var poll_mesh = BoxMesh.new()
+	poll_mesh.size = Vector3(0.14, 0.24, 0.18)
+	poll.mesh = poll_mesh
+	poll.position = Vector3(0.0, 1.05, 0.12)
+	poll.material_override = head_mat
+	visual_root.add_child(poll)
+
+	# PRIMARY swing override: a flat HORIZONTAL chop, right -> left, blade parallel to
+	# the ground (like felling a tree). Assigning combo_sequence here stops base_melee
+	# from generating its default overhead heavy combo for the axe (hammer keeps its slam).
+	combo_sequence = [
+		{
+			"duration": 0.55,
+			"poses": [
+				{"t": 0.0, "pos": Vector3.ZERO, "rot": Vector3.ZERO},
+				{"t": 0.22, "pos": Vector3(0.0, 0.0, 0.1), "rot": Vector3(0, 0, -90)},
+				{"t": 0.62, "pos": Vector3(0.0, 0.0, -0.3), "rot": Vector3(0, 170, -90)},
+				{"t": 1.0, "pos": Vector3.ZERO, "rot": Vector3.ZERO}
+			]
+		}
+	]
 
 func alt_use_pressed(character: Node3D) -> void:
 	if not can_use() or not wielder: return

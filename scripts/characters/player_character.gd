@@ -74,6 +74,7 @@ var _is_sprinting: bool = false
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
 var _was_on_floor: bool = false
+var _highest_y_in_air: float = -9999.0
 var _is_right_shoulder: bool = true
 
 ## The input direction relative to the camera (set each frame)
@@ -540,26 +541,32 @@ func _physics_process(delta: float) -> void:
 	if rig:
 		var active_tool = loadout_manager.get_active_tool() if loadout_manager else null
 		rig.update_animation(velocity, is_on_floor(), delta, active_tool)
-
-	# Store vertical velocity before move_and_slide applies floor collision
-	var pre_fall_velocity_y = velocity.y
+		
+	if not is_on_floor():
+		_highest_y_in_air = max(_highest_y_in_air, global_position.y)
 
 	move_and_slide()
 
-	# Fall damage logic
-	if is_on_floor() and not _was_on_floor:
-		# We just landed this frame.
-		# A jump force is ~12.0. A 2-story fall hits ~ -20.0. 
-		# We'll set the safe threshold at -16.0 (approx 1.5 stories).
-		var fall_threshold = -16.0
-		if pre_fall_velocity_y < fall_threshold:
-			var excess = abs(pre_fall_velocity_y - fall_threshold)
-			var fall_dmg = excess * 10.0 # 1 m/s extra = 10 damage. (20m/s = 40 damage)
+	# Fall damage logic (Height-based to ignore artificial gravity multipliers)
+	if is_on_floor():
+		if not _was_on_floor:
+			# We just landed this frame.
+			var fall_dist = _highest_y_in_air - global_position.y
 			
-			# Ensure we only take fall damage on our own client (authoritative for now)
-			if _is_local_player():
-				print("HARD LANDING! Impact velocity: ", pre_fall_velocity_y, " | Damage: ", fall_dmg)
-				take_damage(fall_dmg, owning_peer_id) # Self damage
+			# Safe threshold: 6.0 meters (approx 1 story + jump apex).
+			# 2-story jump peak to ground is ~11.0m. 
+			var safe_fall = 6.0
+			if fall_dist > safe_fall:
+				var excess = fall_dist - safe_fall
+				var fall_dmg = excess * 10.0 # 5m excess (2-story) = 50 damage (half HP)
+				
+				# Ensure we only take fall damage on our own client (authoritative for now)
+				if _is_local_player():
+					print("HARD LANDING! Fall distance: ", fall_dist, " | Damage: ", fall_dmg)
+					take_damage(fall_dmg, owning_peer_id) # Self damage
+		
+		# Reset apex tracker while grounded
+		_highest_y_in_air = global_position.y
 
 	# Track floor state for coyote time
 	if is_on_floor():

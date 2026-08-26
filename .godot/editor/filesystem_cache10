@@ -1,10 +1,11 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1787699909
+::res://::1787704999
 AGENTS.md::TextFile::-1::1787674081::0::1::::<><><>0<>0<><>::
-AGENT_HANDOFF.md::TextFile::-1::1787680409::0::1::::<><><>0<>0<><>::
+AGENT_HANDOFF.md::TextFile::-1::1787704999::0::1::::<><><>0<>0<><>::
 Art_Direction_Addendum.md::TextFile::-1::1787678155::0::1::::<><><>0<>0<><>::
 GDD.md::TextFile::-1::1787678155::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D::2889555760830765963::1787678155::1787678244::1::::<><><>0<>0<>a5e5302350010107f736a998c69f77b4<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
+Intro Comic v2.jpg::CompressedTexture2D::7967418417309194847::1787704999::1787716085::1::::<><><>0<>0<>4b700ed7f76da3e35dc157b3be978de1<>res://.godot/imported/Intro Comic v2.jpg-a3d81fe8b0e6880f93b4c625c1b8ae44.ctex::
 Intro Comic.jpg::CompressedTexture2D::7511469129157737538::1787679388::1787679407::1::::<><><>0<>0<>61896d19171f5880dbcb2dc2067f6b4f<>res://.godot/imported/Intro Comic.jpg-98dd1e1c601180ecc62e45884201572c.ctex::
 print_tree.gd::GDScript::-1::1787678155::0::1::::<>SceneTree<><>0<>0<><>::
 README.md::TextFile::-1::1787669269::0::1::::<><><>0<>0<><>::
@@ -39,9 +40,9 @@ README.md::TextFile::-1::1787669269::0::1::::<><><>0<>0<><>::
 ::res://scenes/characters/::1787625878
 player_character.tscn::PackedScene::8277180956890855924::1787625878::0::1::::<><><>0<>0<><>::res://scripts/characters/player_character.gd<>res://shaders/toon_character.gdshader
 ::res://scenes/effects/::1787591713
-::res://scenes/main/::1787674931
-main_menu.tscn::PackedScene::8562712783037021365::1787610106::0::1::::<><><>0<>0<><>::uid://dcdr7c8o48qgt::::res://scripts/ui/main_menu.gd
-suburban_arena.tscn::PackedScene::-1::1787674931::0::1::::<><><>0<>0<><>::res://shaders/toon_character.gdshader<>res://shaders/outline.gdshader<>res://scripts/characters/player_character.gd<>res://scripts/levels/test_level.gd<>res://scripts/levels/suburban_arena.gd
+::res://scenes/main/::1787704986
+main_menu.tscn::PackedScene::8562712783037021365::1787700136::0::1::::<><><>0<>0<><>::uid://dcdr7c8o48qgt::::res://scripts/ui/main_menu.gd
+suburban_arena.tscn::PackedScene::-1::1787704986::0::1::::<><><>0<>0<><>::res://shaders/toon_character.gdshader<>res://shaders/outline.gdshader<>res://scripts/characters/player_character.gd<>res://scripts/levels/test_level.gd<>res://scripts/levels/suburban_arena.gd
 test_level.tscn::PackedScene::-1::1787625472::0::1::::<><><>0<>0<><>::res://shaders/toon_character.gdshader<>res://shaders/outline.gdshader<>res://scripts/characters/player_character.gd<>res://scripts/levels/test_level.gd
 ::res://scenes/maps/::1787591713
 ::res://scenes/ui/::1787591713
@@ -53,21 +54,21 @@ network_manager.gd::GDScript::774317739153493010::1787625243::0::1::::<>Node<><>
 team_manager.gd::GDScript::3296604399082744488::1787597619::0::1::::<>Node<><>0<>0<><>::
 ::res://scripts/characters/::1787617491
 chibi_rig.gd::GDScript::8020274817639495702::1787619670::0::1::::ChibiRig<>Node3D<><>0<>0<><>::
-player_character.gd::GDScript::7159400247334058921::1787693760::0::1::::PlayerCharacter<>CharacterBody3D<><>0<>0<><>::
+player_character.gd::GDScript::7159400247334058921::1787700368::0::1::::PlayerCharacter<>CharacterBody3D<><>0<>0<><>::
 ::res://scripts/characters/components/::1787600959
 loadout_manager.gd::GDScript::2731565042678198795::1787619681::0::1::::LoadoutManager<>Node<><>0<>0<><>::
 ::res://scripts/items/::1787625049
 health_pack.gd::GDScript::6789189831190400305::1787621443::0::1::::<>Area3D<><>0<>0<><>::
-supply_box.gd::GDScript::8101703039368903264::1787621278::0::1::::<>Area3D<><>0<>0<><>::
-::res://scripts/levels/::1787677464
-suburban_arena.gd::GDScript::3670729699478611009::1787674931::0::1::::<>Node3D<><>0<>0<><>::
-test_level.gd::GDScript::3847487287568500972::1787669887::0::1::::<>Node3D<><>0<>0<><>::
+supply_box.gd::GDScript::8101703039368903264::1787700234::0::1::::<>Area3D<><>0<>0<><>::
+::res://scripts/levels/::1787701689
+suburban_arena.gd::GDScript::3670729699478611009::1787701689::0::1::::<>Node3D<><>0<>0<><>::
+test_level.gd::GDScript::3847487287568500972::1787700239::0::1::::<>Node3D<><>0<>0<><>::
 ::res://scripts/maps/::1787591713
 ::res://scripts/traversal/::1787677464
 ladder_object.gd::GDScript::7061697093339126932::1787669887::0::1::::LadderObject<>Node3D<><>0<>0<><>::
 zipline_object.gd::GDScript::3864290855581343246::1787626340::0::1::::ZiplineObject<>StaticBody3D<><>0<>0<><>::
 ::res://scripts/ui/::1787591969
-main_menu.gd::GDScript::7306922362600945271::1787678431::0::1::::<>Control<><>0<>0<><>::
+main_menu.gd::GDScript::7306922362600945271::1787704506::0::1::::<>Control<><>0<>0<><>::
 ::res://scripts/vehicles/::1787625049
 rocket_mower.gd::GDScript::8179609799816507774::1787622370::0::1::::<>CharacterBody3D<><>0<>0<><>::
 ::res://scripts/weapons/::1787601177
@@ -79,8 +80,8 @@ botanist_gadget.gd::GDScript::6053962675831288645::1787680551::0::1::::<>RigidBo
 cleanup_guy_gadget.gd::GDScript::3900564140272831069::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 climber_gadget.gd::GDScript::7318469377345963299::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 electrician_gadget.gd::GDScript::511488964964428122::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
-extension_ladder_tool.gd::GDScript::3285083096089768677::1787680551::0::1::::ExtensionLadderTool<>RigidBody3D<><>0<>0<><>::
-foreman_gadget.gd::GDScript::6481579590789239568::1787693646::0::1::::<>RigidBody3D<><>0<>0<><>::
+extension_ladder_tool.gd::GDScript::3285083096089768677::1787700548::0::1::::ExtensionLadderTool<>RigidBody3D<><>0<>0<><>::
+foreman_gadget.gd::GDScript::6481579590789239568::1787700161::0::1::::<>RigidBody3D<><>0<>0<><>::
 foreman_shield.gd::GDScript::4732962190264860569::1787693631::0::1::::<>StaticBody3D<><>0<>0<><>::
 gutter_sniper_gadget.gd::GDScript::5877845407433046829::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::
 hobbyist_gadget.gd::GDScript::4921723377823647474::1787680551::0::1::::<>RigidBody3D<><>0<>0<><>::

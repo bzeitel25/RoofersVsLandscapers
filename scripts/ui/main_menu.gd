@@ -138,11 +138,11 @@ func _on_lobby_updated(players: Array) -> void:
 func _on_start_game() -> void:
 	if NetworkManager.is_host:
 		# For now, just load training arena for everyone
-		_load_level.rpc("res://scenes/main/test_level.tscn")
+		_load_level.rpc("res://scenes/main/suburban_arena.tscn")
 
 @rpc("call_local", "reliable")
 func _load_level(path: String) -> void:
 	get_tree().change_scene_to_file(path)
 
 func _on_test_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/main/test_level.tscn")
+	get_tree().change_scene_to_file("res://scenes/main/suburban_arena.tscn")

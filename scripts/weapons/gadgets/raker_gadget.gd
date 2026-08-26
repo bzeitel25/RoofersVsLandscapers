@@ -28,23 +28,34 @@ func primary_action() -> void:
 		_deploy(wielder.global_position)
 
 func _deploy(pos: Vector3) -> void:
-	var obj = Node3D.new()
+	var TrapScript = load("res://scripts/weapons/gadgets/leaf_pile_trap.gd")
+	var obj = Area3D.new()
+	obj.set_script(TrapScript)
+	
+	var col = CollisionShape3D.new()
+	var shape = CylinderShape3D.new()
+	shape.radius = 1.2
+	shape.height = 0.5
+	col.shape = shape
+	col.position = Vector3(0, 0.25, 0)
+	obj.add_child(col)
 	
 	var mesh_inst = MeshInstance3D.new()
+	mesh_inst.name = "Mesh"
 	mesh_inst.mesh = SphereMesh.new()
-	mesh_inst.mesh.radius = 1.5
-	mesh_inst.mesh.height = 1.5
+	mesh_inst.mesh.radius = 1.0
+	mesh_inst.mesh.height = 0.5
 	var mat = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.4, 0.3, 0.1) # Brownish
+	mat.albedo_color = Color(0.4, 0.3, 0.1) # Brownish leaves
 	mesh_inst.material_override = mat
-	mesh_inst.position = Vector3(0, 0.75, 0)
+	mesh_inst.position = Vector3(0, 0.25, 0)
 	obj.add_child(mesh_inst)
 	
 	wielder.get_tree().current_scene.add_child(obj)
 	obj.global_position = pos
 	
 	var timer = Timer.new()
-	timer.wait_time = 15.0
+	timer.wait_time = 60.0 # Lasts 1 minute
 	timer.one_shot = true
 	timer.timeout.connect(obj.queue_free)
 	obj.add_child(timer)
