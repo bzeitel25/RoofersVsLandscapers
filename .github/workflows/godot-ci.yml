@@ -1,0 +1,52 @@
+name: "Deploy to GitHub Pages"
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  export-web:
+    name: Web Export
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/4.3.stable ~/.local/share/godot/export_templates/4.3.stable
+
+      - name: Web Build
+        run: |
+          mkdir -v -p build/web
+          godot --headless --export-release "Web" build/web/index.html
+
+      - name: Add coi-serviceworker
+        run: |
+          wget https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.js -O build/web/coi-serviceworker.js
+          sed -i 's|</head>|<script src="coi-serviceworker.js"></script></head>|g' build/web/index.html
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: export-web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
