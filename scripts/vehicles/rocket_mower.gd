@@ -13,7 +13,7 @@ func _ready() -> void:
 	health = max_health
 	
 	# Let's set collision layers
-	collision_layer = 9 # Layer 1 (World) and Layer 4 (Vehicles)
+	collision_layer = 1 | 8 | 64 # Layer 1 (World) + Layer 4 (Vehicles) + Layer 7 (Interactable)
 	collision_mask = 1 | 2 # Collide with World and Players
 	
 	_build_mesh()

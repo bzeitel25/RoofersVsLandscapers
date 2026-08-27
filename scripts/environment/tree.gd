@@ -1,4 +1,3 @@
-class_name ChoppableTree
 extends StaticBody3D
 # ============================================================
 # ROOFERS vs LANDSCAPERS — Choppable Tree

@@ -14,7 +14,7 @@ func _ready() -> void:
 	can_mesh.mesh = CylinderMesh.new()
 	can_mesh.mesh.top_radius = 0.1
 	can_mesh.mesh.bottom_radius = 0.1
-	can_mesh.height = 0.3
+	can_mesh.mesh.height = 0.3
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = Color.DARK_SLATE_GRAY
 	can_mesh.material_override = mat

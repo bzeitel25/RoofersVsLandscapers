@@ -1,4 +1,3 @@
-class_name LadderObject
 extends Node3D
 
 @export var climb_speed: float = 4.0
