@@ -1,6 +1,6 @@
 # Roofers vs Landscapers 🏠✂️
 
-?? **PLAY NOW IN YOUR BROWSER:** [Click Here to Play Roofers vs Landscapers!](https://bzeitel25.github.io/RoofersVsLandscapers/)
+**PLAY NOW IN YOUR BROWSER:** [Click Here to Play Roofers vs Landscapers!](https://bzeitel25.github.io/RoofersVsLandscapers/)
 
 **A chaotic, asymmetrical multiplayer hero shooter built in Godot 4.**
 
