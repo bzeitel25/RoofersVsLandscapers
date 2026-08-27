@@ -28,9 +28,8 @@ func primary_action() -> void:
 		_deploy(wielder.global_position)
 
 func _deploy(pos: Vector3) -> void:
-	var TrapScript = load("res://scripts/weapons/gadgets/leaf_pile_trap.gd")
-	var obj = Area3D.new()
-	obj.set_script(TrapScript)
+	const TRAP_SCRIPT = preload("res://scripts/weapons/gadgets/leaf_pile_trap.gd")
+	var obj = TRAP_SCRIPT.new()
 	
 	var col = CollisionShape3D.new()
 	var shape = CylinderShape3D.new()

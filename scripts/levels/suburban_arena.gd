@@ -23,6 +23,9 @@ extends Node3D
 const WORLD_LAYER := 1
 const LADDER_SCRIPT := preload("res://scripts/traversal/ladder_object.gd")
 const TREE_SCRIPT := preload("res://scripts/environment/tree.gd")
+const SLIP_TRAP_SCRIPT := preload("res://scripts/environment/slip_trap.gd")
+const PAINT_TRAP_SCRIPT := preload("res://scripts/environment/paint_can_trap.gd")
+const CAR_SCRIPT := preload("res://scripts/vehicles/hotwire_car.gd")
 
 @export var rng_seed: int = 20260825
 @export var ground_size: float = 200.0
@@ -394,9 +397,6 @@ func _build_single_house(house: Node3D, index: int, sp) -> void:
 	_scatter_traps(house, W, D, n)
 
 func _scatter_traps(house: Node3D, W: float, D: float, stories: int) -> void:
-	var SlipTrap = load("res://scripts/environment/slip_trap.gd")
-	var PaintTrap = load("res://scripts/environment/paint_can_trap.gd")
-	if not SlipTrap or not PaintTrap: return
 	
 	# 1-3 Slip Traps per floor
 	for i in range(stories):
@@ -405,8 +405,7 @@ func _scatter_traps(house: Node3D, W: float, D: float, stories: int) -> void:
 		for t in range(traps):
 			var rx = randf_range(-W*0.4, W*0.4)
 			var rz = randf_range(-D*0.4, D*0.4)
-			var trap = Area3D.new()
-			trap.set_script(SlipTrap)
+			var trap = SLIP_TRAP_SCRIPT.new()
 			house.add_child(trap)
 			trap.position = Vector3(rx, floor_y + 0.1, rz)
 			
@@ -431,8 +430,7 @@ func _scatter_traps(house: Node3D, W: float, D: float, stories: int) -> void:
 		if randf() > 0.5: # 50% chance per floor
 			var rx = randf_range(-W*0.2, W*0.2)
 			var rz = randf_range(-D*0.2, D*0.2)
-			var trap = Area3D.new()
-			trap.set_script(PaintTrap)
+			var trap = PAINT_TRAP_SCRIPT.new()
 			house.add_child(trap)
 			trap.position = Vector3(rx, floor_y + story_height - 0.5, rz)
 
@@ -693,10 +691,7 @@ func _build_car(parent: Node3D, pos: Vector3, index: int) -> void:
 	var glass := _get_mat("car_glass", Color(0.2, 0.25, 0.3), 0.1, 0.3, Color(0.05, 0.07, 0.1))
 	var tire := _get_mat("tire", Color(0.06, 0.06, 0.07))
 	
-	# Load our hotwire vehicle script
-	var car_script = load("res://scripts/vehicles/hotwire_car.gd")
-	var car = CharacterBody3D.new()
-	car.set_script(car_script)
+	var car = CAR_SCRIPT.new()
 	car.name = "Car_%d" % index
 	parent.add_child(car)
 	car.position = pos

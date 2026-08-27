@@ -86,8 +86,7 @@ func _fire_nail() -> void:
 		return
 		
 	# Create projectile
-	var proj = Area3D.new()
-	proj.set_script(PROJECTILE_SCRIPT)
+	var proj = PROJECTILE_SCRIPT.new()
 	proj.status_effect = "nail"
 	wielder.get_tree().current_scene.add_child(proj)
 	

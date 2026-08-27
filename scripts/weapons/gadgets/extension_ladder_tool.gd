@@ -53,8 +53,7 @@ func equip(new_wielder: Node3D) -> void:
 	
 	# Create ghost ladder
 	if not _ghost_ladder:
-		_ghost_ladder = Node3D.new()
-		_ghost_ladder.set_script(LADDER_SCRIPT)
+		_ghost_ladder = LADDER_SCRIPT.new()
 		_ghost_ladder.is_ghost = true
 		_ghost_ladder.ladder_height = 5.0
 		get_tree().current_scene.add_child(_ghost_ladder)
@@ -160,8 +159,7 @@ func primary_action() -> void:
 		_ghost_ladder.hide()
 
 func _deploy_ladder(deploy_pos: Vector3, wall_normal: Vector3, height: float) -> void:
-	var ladder = Node3D.new()
-	ladder.set_script(LADDER_SCRIPT)
+	var ladder = LADDER_SCRIPT.new()
 	ladder.ladder_height = height
 	
 	var world = wielder.get_tree().current_scene

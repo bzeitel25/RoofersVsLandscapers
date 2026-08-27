@@ -78,8 +78,7 @@ func primary_action() -> void:
 	_deploy(deploy_pos, face_direction)
 
 func _deploy(pos: Vector3, forward: Vector3) -> void:
-	var obj = StaticBody3D.new()
-	obj.set_script(SHIELD_SCRIPT)
+	var obj = SHIELD_SCRIPT.new()
 	obj.add_to_group("foreman_shield")
 	
 	var mesh_inst = MeshInstance3D.new()
