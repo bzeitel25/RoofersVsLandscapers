@@ -4,9 +4,9 @@
 
 **A chaotic, asymmetrical multiplayer hero shooter built in Godot 4.**
 
-Welcome to the ultimate turf war. In *Roofers vs Landscapers*, two bitter rival construction and maintenance crews fight for total dominance over a suburban battlefield. 
+Welcome to the ultimate turf war. In *Roofers vs Landscapers*, two bitter rival crews fight for total dominance over a suburban battlefield. 
 
-Will you take the high ground and defend your roof, or will you command the yard and siege the house?
+Will you command the yard and siege the house, or will you take the high ground and defend your roof?
 
 ## 🎮 The Gameplay Loop
 
