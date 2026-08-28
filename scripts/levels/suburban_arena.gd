@@ -299,14 +299,39 @@ func _scatter_grass_tufts() -> void:
 	mm.mesh = quad
 	
 	for i in range(mm.instance_count):
-		var px := _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
-		var pz := _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+		var px := 0.0
+		var pz := 0.0
+		var valid := false
 		
-		var dist_to_center = Vector2(px, pz).length()
-		if dist_to_center < bulb_radius + 1.0 or (abs(px) < road_half_width + 1.0 and pz > bulb_radius):
-			if _rng.randf() < 0.9:
-				px = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
-				pz = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+		while not valid:
+			px = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+			pz = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+			
+			var dist_to_center = Vector2(px, pz).length()
+			var on_bulb = dist_to_center < (bulb_radius + sidewalk_width + 0.5)
+			var on_road = (abs(px) < road_half_width + sidewalk_width + 0.5) and (pz >= -1.0)
+			
+			var in_house = false
+			for h in _house_meta:
+				var h_node = h["node"]
+				# Convert to local coordinates of the house to check its oriented bounding box
+				var local_pos = h_node.to_local(Vector3(px, 0, pz))
+				var hx = abs(local_pos.x)
+				var hz = local_pos.z
+				var hw = h["W"] * 0.5
+				var hd = h["D"] * 0.5
+				
+				# Inside the main house footprint
+				if hx < hw + 0.5 and hz > -hd - 0.5 and hz < hd + 0.5:
+					in_house = true
+					break
+				# Inside the front porch, garage, or driveway area (which extend forward / negative Z)
+				if hz < -hd + 1.0 and hz > -hd - 7.0 and hx < hw + 3.0:
+					in_house = true
+					break
+			
+			if not (on_bulb or on_road or in_house):
+				valid = true
 				
 		var t := Transform3D()
 		t = t.rotated_local(Vector3.UP, _rng.randf_range(0, TAU))
