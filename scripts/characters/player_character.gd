@@ -595,7 +595,6 @@ func exit_perch() -> void:
 	if character_mesh:
 		character_mesh.scale = Vector3(1, 1, 1)
 
-func _handle_movement(delta: float) -> void:
 # In 3D, input is RELATIVE TO THE CAMERA:
 #   Press W → move in the direction the CAMERA is facing
 #   Press A → move to the LEFT of the camera
