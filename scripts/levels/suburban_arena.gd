@@ -56,11 +56,13 @@ func _get_mat(key: String, color: Color, rough: float = 0.95, metal: float = 0.0
 	if key.begins_with("wall") or key.begins_with("brick"):
 		m.albedo_texture = load("res://assets/textures/environment/brick_wall.jpg")
 		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
 		m.uv1_scale = Vector3(0.15, 0.15, 0.15) # Make the bricks chunkier and larger
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	elif key.begins_with("roof"):
 		m.albedo_texture = load("res://assets/textures/environment/roof_shingles.jpg")
 		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
 		m.uv1_scale = Vector3(0.2, 0.2, 0.2) # Make the shingles larger
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		
