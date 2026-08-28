@@ -1,5 +1,5 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1787880693
+::res://::1787922694
 AGENTS.md::TextFile::-1::1787674081::0::1::::<><><>0<>0<><>::
 AGENT_HANDOFF.md::TextFile::-1::1787878267::0::1::::<><><>0<>0<><>::
 Art_Direction_Addendum.md::TextFile::-1::1787678155::0::1::::<><><>0<>0<><>::
@@ -31,7 +31,7 @@ test_scenes.gd::GDScript::5279458964529225814::1787793405::0::1::::<>SceneTree<>
 ::res://assets/models/weapons/::1787591714
 ::res://assets/textures/::1787591714
 ::res://assets/textures/characters/::1787591714
-::res://assets/textures/environment/::1787880119
+::res://assets/textures/environment/::1787883406
 asphalt.jpg::CompressedTexture2D::6628600568283853167::1787880028::1787880119::1::::<><><>0<>0<>1aee921aa957093f53f0d09321811275<>res://.godot/imported/asphalt.jpg-e5bd25a5bfb15ad857fdf1b49cebde3a.ctex::
 brick_wall.jpg::CompressedTexture2D::757224237631166008::1787877796::1787877896::1::::<><><>0<>0<>b37b2ea86f75791aaf4005ba370133e5<>res://.godot/imported/brick_wall.jpg-5dba6745bcc0b4dbbc52e87919bf7814.ctex::
 concrete.jpg::CompressedTexture2D::2812750505864207311::1787880037::1787880119::1::::<><><>0<>0<>c3491a54ae977952ffe60abb7a96f199<>res://.godot/imported/concrete.jpg-1a7172431ec6a2440616199e9d012726.ctex::
@@ -41,7 +41,6 @@ leaves.jpg::CompressedTexture2D::2285870837501421884::1787878942::1787879516::1:
 roof_shingles.jpg::CompressedTexture2D::7764516655736193149::1787877806::1787877896::1::::<><><>0<>0<>562f7d05486740b7f62880001d8e8ea9<>res://.godot/imported/roof_shingles.jpg-45dd4fd43d3330d96267cc00ec08bc5e.ctex::
 wood.jpg::CompressedTexture2D::4649476158162503474::1787878933::1787879516::1::::<><><>0<>0<>6a9dc3850e5b0e1ed57d6e6b3ed4ccdb<>res://.godot/imported/wood.jpg-f77636451aad63760da9eaf3af592f33.ctex::
 ::res://assets/textures/ui/::1787591714
-::res://New folder/::1787856235
 ::res://resources/::1787591713
 ::res://resources/classes/::1787591714
 ::res://resources/classes/landscapers/::1787591714
@@ -66,18 +65,19 @@ network_manager.gd::GDScript::774317739153493010::1787776936::0::1::::<>Node<><>
 team_manager.gd::GDScript::3296604399082744488::1787597619::0::1::::<>Node<><>0<>0<><>::
 ::res://scripts/characters/::1787617491
 chibi_rig.gd::GDScript::8020274817639495702::1787619670::0::1::::ChibiRig<>Node3D<><>0<>0<><>::
-player_character.gd::GDScript::7159400247334058921::1787839183::0::1::::PlayerCharacter<>CharacterBody3D<><>0<>0<><>::
+player_character.gd::GDScript::7159400247334058921::1787887699::0::1::::PlayerCharacter<>CharacterBody3D<><>0<>0<><>::
 ::res://scripts/characters/components/::1787600959
 loadout_manager.gd::GDScript::2731565042678198795::1787619681::0::1::::LoadoutManager<>Node<><>0<>0<><>::
-::res://scripts/environment/::1787830508
+::res://scripts/environment/::1787883990
 paint_can_trap.gd::GDScript::5971393991509338988::1787769023::0::1::::<>Area3D<><>0<>0<><>::
 slip_trap.gd::GDScript::8521991476245605528::1787768356::0::1::::<>Area3D<><>0<>0<><>::
-tree.gd::GDScript::1850680240619963590::1787880337::0::1::::<>StaticBody3D<><>0<>0<><>::
+tree.gd::GDScript::1850680240619963590::1787887727::0::1::::<>StaticBody3D<><>0<>0<><>::
+tree_branch.gd::GDScript::8155989122688186006::1787887784::0::1::::<>Node3D<><>0<>0<><>::
 ::res://scripts/items/::1787625049
 health_pack.gd::GDScript::6789189831190400305::1787621443::0::1::::<>Area3D<><>0<>0<><>::
 supply_box.gd::GDScript::8101703039368903264::1787700234::0::1::::<>Area3D<><>0<>0<><>::
 ::res://scripts/levels/::1787793405
-suburban_arena.gd::GDScript::3670729699478611009::1787880680::0::1::::<>Node3D<><>0<>0<><>::
+suburban_arena.gd::GDScript::3670729699478611009::1787883496::0::1::::<>Node3D<><>0<>0<><>::
 test_level.gd::GDScript::3847487287568500972::1787700239::0::1::::<>Node3D<><>0<>0<><>::
 ::res://scripts/maps/::1787591713
 ::res://scripts/traversal/::1787830508

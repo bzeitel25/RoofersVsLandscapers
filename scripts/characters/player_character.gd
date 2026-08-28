@@ -624,6 +624,7 @@ var is_crouching: bool = false
 
 func perch(pos: Vector3) -> void:
 	is_perched = true
+	is_crouching = false # Reset state
 	global_position = pos + Vector3(0, 0.4, 0)
 	velocity = Vector3.ZERO
 	if character_mesh:
@@ -789,13 +790,11 @@ func _rotate_character_mesh(delta: float) -> void:
 		if camera_forward.length_squared() > 0.01:
 			var target_basis = Basis.looking_at(camera_forward.normalized(), Vector3.UP)
 			
-			# Preserve crouch scale while rotating
-			var current_scale = character_mesh.scale
-			var q_current = character_mesh.global_transform.basis.get_rotation_quaternion()
+			# Extract a pure rotation quaternion from the target global basis
 			var q_target = target_basis.get_rotation_quaternion()
 			
-			character_mesh.global_transform.basis = Basis(q_current.slerp(q_target, 15.0 * delta))
-			character_mesh.scale = current_scale
+			# Smoothly interpolate the local quaternion (which safely ignores scale)
+			character_mesh.quaternion = character_mesh.quaternion.slerp(q_target, 15.0 * delta)
 			
 	# Also pitch the weapon arm up and down to match camera pitch
 	if hand_attachment_point:
