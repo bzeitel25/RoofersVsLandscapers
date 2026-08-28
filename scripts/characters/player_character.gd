@@ -151,11 +151,14 @@ func _ready() -> void:
 	if not camera.has_node("InteractRay"):
 		interact_ray = RayCast3D.new()
 		interact_ray.name = "InteractRay"
-		interact_ray.target_position = Vector3(0, 0, -3.0)
+		interact_ray.target_position = Vector3(0, 0, -12.0) # Shoot past the player (camera is 5m away)
 		interact_ray.collision_mask = 64
+		interact_ray.collide_with_areas = true
 		camera.add_child(interact_ray)
 	else:
 		interact_ray = camera.get_node("InteractRay")
+		interact_ray.target_position = Vector3(0, 0, -12.0)
+		interact_ray.collide_with_areas = true
 	
 	# Set up loadout manager if missing
 	if not has_node("LoadoutManager"):
@@ -407,6 +410,8 @@ func _toggle_shoulder() -> void:
 func _try_interact() -> void:
 	if interact_ray and interact_ray.is_colliding():
 		var collider = interact_ray.get_collider()
+		if global_position.distance_to(interact_ray.get_collision_point()) > 4.0:
+			return
 		if not collider is BaseTool:
 			# Handle interacting with vans, doors, generators, etc.
 			print("Interacted with: ", collider.name)
@@ -416,6 +421,8 @@ func _try_interact() -> void:
 func _try_equip() -> void:
 	if interact_ray and interact_ray.is_colliding():
 		var collider = interact_ray.get_collider()
+		if global_position.distance_to(interact_ray.get_collision_point()) > 4.0:
+			return
 		if collider is BaseTool:
 			# Pick up weapon/gadget
 			print("Equipped: ", collider.tool_name)
@@ -487,15 +494,18 @@ func _update_hud() -> void:
 	if interact_prompt:
 		if not is_perched and not current_vehicle and interact_ray and interact_ray.is_colliding():
 			var collider = interact_ray.get_collider()
-			if collider is BaseTool:
-				interact_prompt.text = "Press F to Equip " + collider.tool_name
-			elif collider.has_method("interact"):
-				if "tree_branch" in collider.get_script().resource_path:
-					interact_prompt.text = "Press F to Perch"
-				else:
-					interact_prompt.text = "Press F to Interact"
-			else:
+			if global_position.distance_to(interact_ray.get_collision_point()) > 4.0:
 				interact_prompt.text = ""
+			else:
+				if collider is BaseTool:
+					interact_prompt.text = "Press F to Equip " + collider.tool_name
+				elif collider.has_method("interact"):
+					if collider.get_script() and "tree_branch" in collider.get_script().resource_path:
+						interact_prompt.text = "Press F to Perch"
+					else:
+						interact_prompt.text = "Press F to Interact"
+				else:
+					interact_prompt.text = ""
 		else:
 			interact_prompt.text = ""
 
@@ -778,7 +788,14 @@ func _rotate_character_mesh(delta: float) -> void:
 		camera_forward.y = 0
 		if camera_forward.length_squared() > 0.01:
 			var target_basis = Basis.looking_at(camera_forward.normalized(), Vector3.UP)
-			character_mesh.global_transform.basis = character_mesh.global_transform.basis.slerp(target_basis, 15.0 * delta)
+			
+			# Preserve crouch scale while rotating
+			var current_scale = character_mesh.scale
+			var q_current = character_mesh.global_transform.basis.get_rotation_quaternion()
+			var q_target = target_basis.get_rotation_quaternion()
+			
+			character_mesh.global_transform.basis = Basis(q_current.slerp(q_target, 15.0 * delta))
+			character_mesh.scale = current_scale
 			
 	# Also pitch the weapon arm up and down to match camera pitch
 	if hand_attachment_point:

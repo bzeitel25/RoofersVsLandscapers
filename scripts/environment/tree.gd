@@ -85,8 +85,7 @@ func _build_visual() -> void:
 	
 	# Physical Branch (to perch/stand on inside the canopy)
 	var branch_body := StaticBody3D.new()
-	branch_body.collision_layer = 1 | 64 # Layer 1 (World) + Layer 7 (Interactable)
-	branch_body.set_script(load("res://scripts/environment/tree_branch.gd"))
+	branch_body.collision_layer = 1 # Layer 1 (World) ONLY
 	
 	var branch_cs := CollisionShape3D.new()
 	var branch_cyl := CylinderShape3D.new()
@@ -98,6 +97,18 @@ func _build_visual() -> void:
 	branch_body.position = Vector3(0, trunk_h * 0.95, 0) # Higher into the canopy
 	branch_body.position += branch_body.transform.basis.y * (0.6 * scale_factor) # Shift out slightly
 	branch_body.add_child(branch_cs)
+	
+	# Massive forgiving interaction zone
+	var interact_area := Area3D.new()
+	interact_area.collision_layer = 64 # Layer 7 (Interactable)
+	interact_area.collision_mask = 0
+	interact_area.set_script(load("res://scripts/environment/tree_branch.gd"))
+	var interact_cs := CollisionShape3D.new()
+	var interact_sphere := SphereShape3D.new()
+	interact_sphere.radius = 2.0 * scale_factor
+	interact_cs.shape = interact_sphere
+	interact_area.add_child(interact_cs)
+	branch_body.add_child(interact_area)
 	
 	var branch_mesh := MeshInstance3D.new()
 	var bm := CylinderMesh.new()
