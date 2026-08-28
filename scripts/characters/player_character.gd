@@ -580,7 +580,22 @@ func _physics_process(delta: float) -> void:
 # ================================================================
 # MOVEMENT — The Big 3D Shift
 # ================================================================
-# In 2D, input maps directly: press Right → move right.
+
+var is_perched: bool = false
+
+func perch(pos: Vector3) -> void:
+	is_perched = true
+	global_position = pos + Vector3(0, 0.4, 0)
+	velocity = Vector3.ZERO
+	if character_mesh:
+		character_mesh.scale = Vector3(1, 0.6, 1)
+
+func exit_perch() -> void:
+	is_perched = false
+	if character_mesh:
+		character_mesh.scale = Vector3(1, 1, 1)
+
+func _handle_movement(delta: float) -> void:
 # In 3D, input is RELATIVE TO THE CAMERA:
 #   Press W → move in the direction the CAMERA is facing
 #   Press A → move to the LEFT of the camera
@@ -614,6 +629,15 @@ func _handle_movement(delta: float) -> void:
 	var sprint_mult = sprint_multiplier if (_is_sprinting and zoom_speed_mult >= 1.0) else 1.0
 	var target_speed: float = (move_speed * sprint_mult) * zoom_speed_mult
 	
+	if is_perched:
+		if Input.is_action_just_pressed("jump") or _input_dir.length() > 0.5:
+			exit_perch()
+			if Input.is_action_just_pressed("jump"):
+				velocity.y = jump_force
+		else:
+			velocity = Vector3.ZERO
+			return
+			
 	if is_tarred:
 		target_speed *= 0.4 # 60% slow from tar
 	
@@ -665,8 +689,8 @@ func exit_ladder() -> void:
 	_is_on_ladder = false
 
 func _handle_gravity(delta: float) -> void:
-	if _is_on_ladder:
-		return # No gravity on ladders
+	if _is_on_ladder or is_perched:
+		return # No gravity on ladders or perches
 		
 	if not is_on_floor():
 		# Apply gravity with fall multiplier for snappier feel
@@ -680,7 +704,7 @@ func _handle_gravity(delta: float) -> void:
 
 
 func _handle_jump(delta: float) -> void:
-	if _is_on_ladder:
+	if _is_on_ladder or is_perched:
 		return
 		
 	# Jump buffer: remember that the player pressed jump recently
