@@ -308,7 +308,8 @@ func _scatter_grass_tufts() -> void:
 			pz = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
 			
 			var dist_to_center = Vector2(px, pz).length()
-			var on_bulb = dist_to_center < (bulb_radius + sidewalk_width + 0.5)
+			var on_island = dist_to_center < (island_radius - 0.2)
+			var on_bulb = (not on_island) and dist_to_center < (bulb_radius + sidewalk_width + 0.5)
 			var on_road = (abs(px) < road_half_width + sidewalk_width + 0.5) and (pz >= -1.0)
 			
 			var in_house = false
@@ -337,7 +338,9 @@ func _scatter_grass_tufts() -> void:
 		t = t.rotated_local(Vector3.UP, _rng.randf_range(0, TAU))
 		var s := _rng.randf_range(0.7, 1.4)
 		t = t.scaled_local(Vector3(s, s, s))
-		t.origin = Vector3(px, quad.size.y * 0.5 * s, pz)
+		
+		var base_y = 0.245 if Vector2(px, pz).length() < island_radius else 0.0
+		t.origin = Vector3(px, base_y + quad.size.y * 0.5 * s, pz)
 		mm.set_instance_transform(i, t)
 		
 	mmi.multimesh = mm
