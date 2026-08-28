@@ -65,6 +65,18 @@ func _get_mat(key: String, color: Color, rough: float = 0.95, metal: float = 0.0
 		m.uv1_world_triplanar = true
 		m.uv1_scale = Vector3(0.2, 0.2, 0.2) # Make the shingles larger
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	elif "grass" in key:
+		m.albedo_texture = load("res://assets/textures/environment/grass.jpg")
+		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
+		m.uv1_scale = Vector3(0.1, 0.1, 0.1) # Extra chunky grass
+		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	elif "wood" in key or "bridge" in key or "fence" in key or "bench" in key or "bark" in key:
+		m.albedo_texture = load("res://assets/textures/environment/wood.jpg")
+		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
+		m.uv1_scale = Vector3(0.15, 0.15, 0.15)
+		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		
 	m.albedo_color = color # This will tint the texture, giving us different colored houses!
 	m.roughness = rough

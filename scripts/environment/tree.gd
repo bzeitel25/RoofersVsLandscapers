@@ -40,11 +40,23 @@ func _ready() -> void:
 
 func _build_visual() -> void:
 	var bark := StandardMaterial3D.new()
+	bark.albedo_texture = load("res://assets/textures/environment/wood.jpg")
 	bark.albedo_color = Color(0.35, 0.25, 0.16)
 	bark.roughness = 0.95
+	bark.uv1_triplanar = true
+	bark.uv1_world_triplanar = true
+	bark.uv1_scale = Vector3(0.2, 0.2, 0.2)
+	bark.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	
 	var leaf := StandardMaterial3D.new()
+	leaf.albedo_texture = load("res://assets/textures/environment/leaves.jpg")
 	leaf.albedo_color = Color(0.2, 0.42, 0.2)
 	leaf.roughness = 0.95
+	leaf.uv1_triplanar = true
+	leaf.uv1_world_triplanar = true
+	leaf.uv1_scale = Vector3(0.15, 0.15, 0.15)
+	leaf.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	
 	var trunk_h := 4.0 * scale_factor
 
 	# Trunk collision lives on THIS body (so melee/projectile hits register on the tree).
@@ -110,7 +122,12 @@ func fell(_from_peer: int = 1) -> void:
 	sm.height = 0.5
 	stump.mesh = sm
 	var stump_mat := StandardMaterial3D.new()
+	stump_mat.albedo_texture = load("res://assets/textures/environment/wood.jpg")
 	stump_mat.albedo_color = Color(0.3, 0.22, 0.14)
+	stump_mat.uv1_triplanar = true
+	stump_mat.uv1_world_triplanar = true
+	stump_mat.uv1_scale = Vector3(0.2, 0.2, 0.2)
+	stump_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	stump.material_override = stump_mat
 	var host := get_parent()
 	if host:
@@ -145,7 +162,12 @@ func _spawn_wood_pickup(host: Node, pos: Vector3) -> void:
 	area.add_child(acs)
 	# Visual: a couple of stacked logs.
 	var bark := StandardMaterial3D.new()
+	bark.albedo_texture = load("res://assets/textures/environment/wood.jpg")
 	bark.albedo_color = Color(0.4, 0.28, 0.16)
+	bark.uv1_triplanar = true
+	bark.uv1_world_triplanar = true
+	bark.uv1_scale = Vector3(0.2, 0.2, 0.2)
+	bark.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	for i in range(2):
 		var log := MeshInstance3D.new()
 		var lm := CylinderMesh.new()
