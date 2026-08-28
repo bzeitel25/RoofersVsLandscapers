@@ -263,8 +263,48 @@ func _ready() -> void:
 		_build_bridges()
 	_build_perimeter()
 	_scatter_common_props()
+	_scatter_grass_tufts()
 	_scatter_street_trees()
 	print("[SuburbanArena] Built %d houses; bridges=%s." % [_house_meta.size(), str(build_bridges)])
+
+func _scatter_grass_tufts() -> void:
+	var mmi := MultiMeshInstance3D.new()
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.instance_count = 8000
+	
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.7, 0.7)
+	
+	var mat := StandardMaterial3D.new()
+	mat.albedo_texture = load("res://assets/textures/environment/grass_tuft.png")
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.5
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	
+	quad.material = mat
+	mm.mesh = quad
+	
+	for i in range(mm.instance_count):
+		var px := _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+		var pz := _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+		
+		var dist_to_center = Vector2(px, pz).length()
+		if dist_to_center < bulb_radius + 1.0 or (abs(px) < road_half_width + 1.0 and pz > bulb_radius):
+			if _rng.randf() < 0.9:
+				px = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+				pz = _rng.randf_range(-ground_size * 0.48, ground_size * 0.48)
+				
+		var t := Transform3D()
+		t = t.rotated_local(Vector3.UP, _rng.randf_range(0, TAU))
+		var s := _rng.randf_range(0.7, 1.4)
+		t = t.scaled_local(Vector3(s, s, s))
+		t.origin = Vector3(px, quad.size.y * 0.5 * s, pz)
+		mm.set_instance_transform(i, t)
+		
+	mmi.multimesh = mm
+	add_child(mmi)
 
 # Dense-ish forest along the grass strips flanking the entry street — cover AND
 # a harvestable resource (chop for supplies to build catapults/ramps/siege).

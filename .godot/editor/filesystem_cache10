@@ -1,7 +1,7 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1787877895
+::res://::1787878489
 AGENTS.md::TextFile::-1::1787674081::0::1::::<><><>0<>0<><>::
-AGENT_HANDOFF.md::TextFile::-1::1787830508::0::1::::<><><>0<>0<><>::
+AGENT_HANDOFF.md::TextFile::-1::1787878267::0::1::::<><><>0<>0<><>::
 Art_Direction_Addendum.md::TextFile::-1::1787678155::0::1::::<><><>0<>0<><>::
 export_presets.cfg::TextFile::-1::1787787790::0::1::::<><><>0<>0<><>::
 GDD.md::TextFile::-1::1787678155::0::1::::<><><>0<>0<><>::
@@ -31,9 +31,13 @@ test_scenes.gd::GDScript::5279458964529225814::1787793405::0::1::::<>SceneTree<>
 ::res://assets/models/weapons/::1787591714
 ::res://assets/textures/::1787591714
 ::res://assets/textures/characters/::1787591714
-::res://assets/textures/environment/::1787877816
+::res://assets/textures/environment/::1787879603
 brick_wall.jpg::CompressedTexture2D::757224237631166008::1787877796::1787877896::1::::<><><>0<>0<>b37b2ea86f75791aaf4005ba370133e5<>res://.godot/imported/brick_wall.jpg-5dba6745bcc0b4dbbc52e87919bf7814.ctex::
+grass.jpg::CompressedTexture2D::3782439224375004254::1787878924::1787879516::1::::<><><>0<>0<>375f07cc478be8c2c3e2c17f155efbd2<>res://.godot/imported/grass.jpg-c57044a2ec40d20b7f7add570af87a49.ctex::
+grass_tuft.png::CompressedTexture2D::4803408717797305736::1787879603::1787879721::1::::<><><>0<>0<>7c6347334b36af82f5492eff082f8e10<>res://.godot/imported/grass_tuft.png-8252523a57249aa26c02d48feede6958.ctex::
+leaves.jpg::CompressedTexture2D::2285870837501421884::1787878942::1787879516::1::::<><><>0<>0<>1bc8901ee33ff4c7f0fb91f2c4a7333f<>res://.godot/imported/leaves.jpg-e633ae5dc96d336359649711dd5beb3c.ctex::
 roof_shingles.jpg::CompressedTexture2D::7764516655736193149::1787877806::1787877896::1::::<><><>0<>0<>562f7d05486740b7f62880001d8e8ea9<>res://.godot/imported/roof_shingles.jpg-45dd4fd43d3330d96267cc00ec08bc5e.ctex::
+wood.jpg::CompressedTexture2D::4649476158162503474::1787878933::1787879516::1::::<><><>0<>0<>6a9dc3850e5b0e1ed57d6e6b3ed4ccdb<>res://.godot/imported/wood.jpg-f77636451aad63760da9eaf3af592f33.ctex::
 ::res://assets/textures/ui/::1787591714
 ::res://New folder/::1787856235
 ::res://resources/::1787591713
@@ -66,12 +70,12 @@ loadout_manager.gd::GDScript::2731565042678198795::1787619681::0::1::::LoadoutMa
 ::res://scripts/environment/::1787830508
 paint_can_trap.gd::GDScript::5971393991509338988::1787769023::0::1::::<>Area3D<><>0<>0<><>::
 slip_trap.gd::GDScript::8521991476245605528::1787768356::0::1::::<>Area3D<><>0<>0<><>::
-tree.gd::GDScript::1850680240619963590::1787830508::0::1::::<>StaticBody3D<><>0<>0<><>::
+tree.gd::GDScript::1850680240619963590::1787879006::0::1::::<>StaticBody3D<><>0<>0<><>::
 ::res://scripts/items/::1787625049
 health_pack.gd::GDScript::6789189831190400305::1787621443::0::1::::<>Area3D<><>0<>0<><>::
 supply_box.gd::GDScript::8101703039368903264::1787700234::0::1::::<>Area3D<><>0<>0<><>::
 ::res://scripts/levels/::1787793405
-suburban_arena.gd::GDScript::3670729699478611009::1787877853::0::1::::<>Node3D<><>0<>0<><>::
+suburban_arena.gd::GDScript::3670729699478611009::1787878963::0::1::::<>Node3D<><>0<>0<><>::
 test_level.gd::GDScript::3847487287568500972::1787700239::0::1::::<>Node3D<><>0<>0<><>::
 ::res://scripts/maps/::1787591713
 ::res://scripts/traversal/::1787830508
