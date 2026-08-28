@@ -113,6 +113,7 @@ var overhead_hp_viewport: SubViewport = null
 var wpn_ui_slots: Array = [] # Stores [ColorRect, Label (CD), Label (Key)] dicts for the 3 weapons
 var ammo_label: Label = null
 var supplies_label: Label = null
+var interact_prompt: Label = null
 
 func _ready() -> void:
 	# Set collision layers: Player is Layer 2, collides with World (1) and Players (2)
@@ -238,6 +239,17 @@ func _create_local_hud() -> void:
 	crosshair.position = Vector2(-4, -4)
 	crosshair.color = Color.WHITE
 	canvas.add_child(crosshair)
+	
+	# Interact Prompt
+	interact_prompt = Label.new()
+	interact_prompt.set_anchors_preset(Control.PRESET_CENTER)
+	interact_prompt.position = Vector2(-100, 20) # Slightly below crosshair
+	interact_prompt.custom_minimum_size = Vector2(200, 30)
+	interact_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	interact_prompt.text = ""
+	interact_prompt.add_theme_font_size_override("font_size", 18)
+	interact_prompt.add_theme_color_override("font_shadow_color", Color.BLACK)
+	canvas.add_child(interact_prompt)
 	
 	# Weapon Icons (Left of Health)
 	var wpn_container = HBoxContainer.new()
@@ -470,6 +482,22 @@ func _update_hud() -> void:
 			else:
 				slot_data["name"].text = ""
 				slot_data["cd"].text = ""
+				
+	# Update interact prompt
+	if interact_prompt:
+		if not is_perched and not current_vehicle and interact_ray and interact_ray.is_colliding():
+			var collider = interact_ray.get_collider()
+			if collider is BaseTool:
+				interact_prompt.text = "Press F to Equip " + collider.tool_name
+			elif collider.has_method("interact"):
+				if "tree_branch" in collider.get_script().resource_path:
+					interact_prompt.text = "Press F to Perch"
+				else:
+					interact_prompt.text = "Press F to Interact"
+			else:
+				interact_prompt.text = ""
+		else:
+			interact_prompt.text = ""
 
 func _physics_process(delta: float) -> void:
 	if skill_cooldowns[0] > 0: skill_cooldowns[0] -= delta
@@ -582,6 +610,7 @@ func _physics_process(delta: float) -> void:
 # ================================================================
 
 var is_perched: bool = false
+var is_crouching: bool = false
 
 func perch(pos: Vector3) -> void:
 	is_perched = true
@@ -636,6 +665,18 @@ func _handle_movement(delta: float) -> void:
 		else:
 			velocity = Vector3.ZERO
 			return
+	else:
+		# Handle regular crouching
+		var wants_to_crouch = Input.is_action_pressed("crouch")
+		if wants_to_crouch and not is_crouching:
+			is_crouching = true
+			if character_mesh: character_mesh.scale = Vector3(1, 0.6, 1)
+		elif not wants_to_crouch and is_crouching:
+			is_crouching = false
+			if character_mesh: character_mesh.scale = Vector3(1, 1, 1)
+			
+		if is_crouching:
+			target_speed *= 0.5 # Slow down when crouching
 			
 	if is_tarred:
 		target_speed *= 0.4 # 60% slow from tar

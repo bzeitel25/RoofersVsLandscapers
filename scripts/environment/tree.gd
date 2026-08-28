@@ -95,7 +95,7 @@ func _build_visual() -> void:
 	branch_cs.shape = branch_cyl
 	
 	branch_body.rotation = Vector3(deg_to_rad(90), 0, randf_range(0, PI)) # Random horizontal angle
-	branch_body.position = Vector3(0, trunk_h * 0.85, 0)
+	branch_body.position = Vector3(0, trunk_h * 0.95, 0) # Higher into the canopy
 	branch_body.position += branch_body.transform.basis.y * (0.6 * scale_factor) # Shift out slightly
 	branch_body.add_child(branch_cs)
 	
