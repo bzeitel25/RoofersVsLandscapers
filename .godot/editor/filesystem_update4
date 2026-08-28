@@ -1,9 +1,0 @@
-res://scenes/main/main_menu.tscn
-res://scripts/levels/test_level.gd
-res://scripts/characters/player_character.gd
-res://scripts/ui/main_menu.gd
-res://scripts/environment/paint_can_trap.gd
-res://scripts/autoload/network_manager.gd
-res://test_scenes.gd
-res://scripts/weapons/gadgets/mower_gadget.gd
-res://scripts/environment/tree.gd

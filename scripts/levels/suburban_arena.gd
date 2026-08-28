@@ -776,7 +776,7 @@ func _build_bush(parent: Node3D, pos: Vector3) -> void:
 
 func _build_tree(parent: Node3D, pos: Vector3, scale_f: float = 1.0) -> void:
 	# Choppable: felled with the Axe/Chainsaw (or Lumberjack TIMBER insta-fell) for supplies.
-	var t := TREE_SCRIPT.new()
+	var t = TREE_SCRIPT.new()
 	t.scale_factor = scale_f
 	parent.add_child(t)
 	t.position = pos
@@ -806,7 +806,7 @@ func _build_rock_cluster(parent: Node3D, pos: Vector3) -> void:
 	_solid(parent, Vector3(0.9, 1.0, 0.9), pos + Vector3(-0.9, 0.5, -0.6), stone, Vector3(0, _rng.randf_range(0, PI), 0), "Rock")
 
 func _place_ladder(parent: Node3D, base_pos: Vector3, height: float, yaw: float) -> void:
-	var lad := LADDER_SCRIPT.new()
+	var lad = LADDER_SCRIPT.new()
 	lad.ladder_height = maxf(height, 2.0)
 	parent.add_child(lad)
 	lad.position = base_pos
