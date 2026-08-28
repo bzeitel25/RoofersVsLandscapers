@@ -77,6 +77,18 @@ func _get_mat(key: String, color: Color, rough: float = 0.95, metal: float = 0.0
 		m.uv1_world_triplanar = true
 		m.uv1_scale = Vector3(0.15, 0.15, 0.15)
 		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	elif "road" in key or "drive" in key:
+		m.albedo_texture = load("res://assets/textures/environment/asphalt.jpg")
+		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
+		m.uv1_scale = Vector3(0.1, 0.1, 0.1)
+		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	elif "sidewalk" in key or "conc" in key or "stone" in key or "rock" in key:
+		m.albedo_texture = load("res://assets/textures/environment/concrete.jpg")
+		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
+		m.uv1_scale = Vector3(0.15, 0.15, 0.15)
+		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		
 	m.albedo_color = color # This will tint the texture, giving us different colored houses!
 	m.roughness = rough

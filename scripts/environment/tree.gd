@@ -56,6 +56,11 @@ func _build_visual() -> void:
 	leaf.uv1_world_triplanar = true
 	leaf.uv1_scale = Vector3(0.15, 0.15, 0.15)
 	leaf.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# Make canopy semi-transparent when the camera is inside it
+	leaf.cull_mode = BaseMaterial3D.CULL_DISABLED
+	leaf.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER
+	leaf.distance_fade_min_distance = 1.0 # Transparent when < 1m
+	leaf.distance_fade_max_distance = 3.5 # Opaque when > 3.5m
 	
 	var trunk_h := 4.0 * scale_factor
 
@@ -77,6 +82,28 @@ func _build_visual() -> void:
 	trunk.material_override = bark
 	trunk.position = Vector3(0, trunk_h * 0.5, 0)
 	add_child(trunk)
+	
+	# Physical Branch (to perch/stand on inside the canopy)
+	var branch_cs := CollisionShape3D.new()
+	var branch_cyl := CylinderShape3D.new()
+	branch_cyl.radius = 0.15 * scale_factor
+	branch_cyl.height = 3.0 * scale_factor
+	branch_cs.shape = branch_cyl
+	branch_cs.rotation = Vector3(deg_to_rad(90), 0, randf_range(0, PI)) # Random horizontal angle
+	branch_cs.position = Vector3(0, trunk_h * 0.85, 0)
+	# Shift the branch out from the trunk slightly along its rotated local Z axis
+	branch_cs.position += branch_cs.transform.basis.y * (1.0 * scale_factor)
+	add_child(branch_cs)
+	
+	var branch_mesh := MeshInstance3D.new()
+	var bm := CylinderMesh.new()
+	bm.top_radius = 0.12 * scale_factor
+	bm.bottom_radius = 0.18 * scale_factor
+	bm.height = 3.0 * scale_factor
+	branch_mesh.mesh = bm
+	branch_mesh.material_override = bark
+	branch_mesh.transform = branch_cs.transform
+	add_child(branch_mesh)
 
 	# Canopy (visual only) — all children topple together when we rotate this body.
 	var c1 := MeshInstance3D.new()
