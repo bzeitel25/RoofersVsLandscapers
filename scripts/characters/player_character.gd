@@ -221,7 +221,7 @@ func _create_placeholder_visor() -> void:
 	var team_id = current_team if current_team >= 0 else 0
 		
 	# Instantiate and inject the procedural chibi rig
-	var ChibiRigClass = preload("res://scripts/characters/chibi_rig.gd")
+	var ChibiRigClass = load("res://scripts/characters/chibi_rig.gd")
 	var rig = ChibiRigClass.new(team_id)
 	rig.name = "ChibiRig"
 	character_mesh.add_child(rig)

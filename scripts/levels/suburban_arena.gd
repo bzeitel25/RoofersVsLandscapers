@@ -21,11 +21,11 @@ extends Node3D
 # ============================================================
 
 const WORLD_LAYER := 1
-const LADDER_SCRIPT := preload("res://scripts/traversal/ladder_object.gd")
-const TREE_SCRIPT := preload("res://scripts/environment/tree.gd")
-const SLIP_TRAP_SCRIPT := preload("res://scripts/environment/slip_trap.gd")
-const PAINT_TRAP_SCRIPT := preload("res://scripts/environment/paint_can_trap.gd")
-const CAR_SCRIPT := preload("res://scripts/vehicles/hotwire_car.gd")
+var LADDER_SCRIPT = load("res://scripts/traversal/ladder_object.gd")
+var TREE_SCRIPT = load("res://scripts/environment/tree.gd")
+var SLIP_TRAP_SCRIPT = load("res://scripts/environment/slip_trap.gd")
+var PAINT_TRAP_SCRIPT = load("res://scripts/environment/paint_can_trap.gd")
+var CAR_SCRIPT = load("res://scripts/vehicles/hotwire_car.gd")
 
 @export var rng_seed: int = 20260825
 @export var ground_size: float = 200.0
@@ -51,7 +51,16 @@ func _get_mat(key: String, color: Color, rough: float = 0.95, metal: float = 0.0
 	if _mats.has(key):
 		return _mats[key]
 	var m := StandardMaterial3D.new()
-	m.albedo_color = color
+	
+	# Apply AI textures based on material key
+	if key.begins_with("wall") or key.begins_with("brick"):
+		m.albedo_texture = load("res://assets/textures/environment/brick_wall.jpg")
+		m.uv1_triplanar = true
+	elif key.begins_with("roof"):
+		m.albedo_texture = load("res://assets/textures/environment/roof_shingles.jpg")
+		m.uv1_triplanar = true
+		
+	m.albedo_color = color # This will tint the texture, giving us different colored houses!
 	m.roughness = rough
 	m.metallic = metal
 	if emis.r + emis.g + emis.b > 0.0:
