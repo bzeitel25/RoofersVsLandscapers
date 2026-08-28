@@ -517,7 +517,7 @@ func _build_floors(house: Node3D, W: float, D: float, n: int, floor_mat: Standar
 	var xh := W * 0.5
 	var zh := D * 0.5
 	# Ground floor.
-	_solid(house, Vector3(W, 0.2, D), Vector3(0, -0.1, 0), floor_mat, Vector3.ZERO, "GroundFloor")
+	_solid(house, Vector3(W, 0.2, D), Vector3(0, -0.05, 0), floor_mat, Vector3.ZERO, "GroundFloor")
 	# Partial upper balconies (back ~62%) with a railing + a ramp up, alternating sides.
 	var cover_d := D * 0.62
 	var slab_cz := zh - cover_d * 0.5
@@ -592,7 +592,7 @@ func _build_garage(house: Node3D, side: float, xh: float, zh: float, wall_mat: S
 	var gx := side * (xh + gw * 0.5)
 	var gz := -zh + gd * 0.5
 	var gwt := 0.3
-	_solid(house, Vector3(gw, 0.2, gd), Vector3(gx, -0.1, gz), _get_mat("floor_conc", Color(0.5, 0.5, 0.52)), Vector3.ZERO, "GarageFloor")
+	_solid(house, Vector3(gw, 0.2, gd), Vector3(gx, -0.05, gz), _get_mat("floor_conc", Color(0.5, 0.5, 0.52)), Vector3.ZERO, "GarageFloor")
 	_wall(house, Vector3(gx - gw * 0.5, 0, -zh), Vector3(gx + gw * 0.5, 0, -zh), gh, gwt, wall_mat, [{"u0": 1.0, "u1": gw - 1.0, "v0": 0.0, "v1": 3.0}])
 	_wall(house, Vector3(gx + side * gw * 0.5, 0, -zh), Vector3(gx + side * gw * 0.5, 0, gz + gd * 0.5), gh, gwt, wall_mat, [])
 	_wall(house, Vector3(gx - gw * 0.5, 0, gz + gd * 0.5), Vector3(gx + gw * 0.5, 0, gz + gd * 0.5), gh, gwt, wall_mat, [])
